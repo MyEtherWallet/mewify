@@ -1,19 +1,24 @@
 {
-  "name": "mewify",
-  "version": "1.0.0",
-  "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MyEtherWallet/mewify.git"
-  },
-  "author": "kvhnuke",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MyEtherWallet/mewify/issues"
-  },
-  "homepage": "https://github.com/MyEtherWallet/mewify#readme"
+    "name": "mewify",
+    "version": "1.0.0",
+    "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
+    "main": "index.html",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nw ."
+    },
+    "window": {
+        "toolbar": true
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MyEtherWallet/mewify.git"
+    },
+    "author": "kvhnuke",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/MyEtherWallet/mewify/issues"
+    },
+    "homepage": "https://github.com/MyEtherWallet/mewify#readme",
+    "dependencies": {}
 }
