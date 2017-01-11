@@ -5,7 +5,8 @@
   "main": "dist/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nw ."
+    "start": "nw .",
+    "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
   },
   "window": {
     "toolbar": true
