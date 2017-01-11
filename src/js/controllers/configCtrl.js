@@ -1,5 +1,5 @@
 'use strict';
 var configCtrl = function($scope) {
-    $scope.testModel = "sdsdfsdf";
+    $scope.port = "";
 };
 module.exports = configCtrl;

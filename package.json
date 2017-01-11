@@ -1,35 +1,39 @@
 {
-    "name": "mewify",
-    "version": "1.0.0",
-    "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
-    "main": "index.html",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "nw ."
-    },
-    "window": {
-        "toolbar": true
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/MyEtherWallet/mewify.git"
-    },
-    "author": "kvhnuke",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/MyEtherWallet/mewify/issues"
-    },
-    "homepage": "https://github.com/MyEtherWallet/mewify#readme",
-    "dependencies": {
-      "gulp": "^3.9.1",
-      "gulp-autoprefixer": "^3.1.0",
-      "gulp-concat": "^2.6.0",
-      "gulp-cssnano": "^2.1.2",
-      "gulp-less": "^3.0.5",
-      "gulp-notify": "^2.2.0",
-      "gulp-plumber": "^1.1.0",
-      "gulp-rename": "^1.2.2",
-      "gulp-sourcemaps": "^1.6.0",
-      "gulp-uglify": "^1.5.3"
-    }
+  "name": "mewify",
+  "version": "1.0.0",
+  "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
+  "main": "dist/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nw ."
+  },
+  "window": {
+    "toolbar": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MyEtherWallet/mewify.git"
+  },
+  "author": "kvhnuke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MyEtherWallet/mewify/issues"
+  },
+  "homepage": "https://github.com/MyEtherWallet/mewify#readme",
+  "dependencies": {
+    "angular": "^1.6.1",
+    "browserify": "^13.3.0",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-cssnano": "^2.1.2",
+    "gulp-less": "^3.0.5",
+    "gulp-notify": "^2.2.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.3",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  }
 }

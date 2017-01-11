@@ -9,62 +9,105 @@ var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
+var browserify = require('browserify')
+var source = require('vinyl-source-stream')
+var buffer = require('vinyl-buffer')
 
 /* Errors */
-function onError( error ){
-  notify.onError( {
-    title:    "Gulp",
-    subtitle: "Failure!",
-    message:  "Error: <%= error.message %>",
-    sound:    "Beep"
-  } )( error );
-  this.emit('end');
+function onError(error) {
+    notify.onError({
+        title: "Gulp",
+        subtitle: "Failure!",
+        message: "Error: <%= error.message %>",
+        sound: "Beep"
+    })(error);
+    this.emit('end');
+}
+
+function onSuccess(msg) {
+    return {
+        message: msg + " Complete! ",
+        onLast: true
+    }
 }
 
 /* Compile Less */
 gulp.task('less', function() {
-  return gulp.src('./src/less/mewify-master.less')
-    .pipe(plumber({ errorHandler: onError }))
-    .pipe( sourcemaps.init() )
-    .pipe(less('compress: false'))
-    .pipe( autoprefixer({
-       browsers: ['last 3 versions', 'iOS > 7'], remove: false
-    } ) )
-    .pipe(rename('mewify-master.css'))
-    .pipe(gulp.dest('./css'))
-    .pipe( cssnano({
-      autoprefixer: false,
-      safe: true
-    } ) )
-    .pipe(rename('mewify-master.min.css'))
-    .pipe(sourcemaps.write( '../css/maps/' ))
-    .pipe(gulp.dest('./css'))
-    .pipe(notify('Less Compiled, Prefixed, & Minified'));
+    return gulp.src('./src/less/mewify-master.less')
+        .pipe(plumber({ errorHandler: onError }))
+        .pipe(sourcemaps.init())
+        .pipe(less('compress: false'))
+        .pipe(autoprefixer({
+            browsers: ['last 3 versions', 'iOS > 7'],
+            remove: false
+        }))
+        .pipe(rename('mewify-master.css'))
+        .pipe(gulp.dest('./dist/css'))
+        .pipe(cssnano({
+            autoprefixer: false,
+            safe: true
+        }))
+        .pipe(rename('mewify-master.min.css'))
+        .pipe(sourcemaps.write('./maps/'))
+        .pipe(gulp.dest('./dist/css'))
+        .pipe(notify('Less Compiled, Prefixed, & Minified'));
 });
 
+// js: concat native
+var js_nativeSrcFiles = './src/native/*.js'
+var js_nativeDestFolder = './dist/js/'
+var js_nativeDestFile = 'mewify-native.js'
+var js_nativeDestFileMin = 'mewify-native.min.js'
 
-/* Concat & Uglify JS */
+/* Concat & Uglify Native JS */
+gulp.task('nativeJS', function() {
+    return gulp.src(js_nativeSrcFiles)
+        .pipe(plumber({ errorHandler: onError }))
+        .pipe(sourcemaps.init())
+        .pipe(gulpConcat(js_nativeDestFile))
+        .pipe(gulp.dest(js_nativeDestFolder))
+        .pipe(uglify())
+        .pipe(rename(js_nativeDestFileMin))
+        .pipe(sourcemaps.write('./maps/'))
+        .pipe(gulp.dest(js_nativeDestFolder))
+        .pipe(notify(onSuccess('JS Native Files Concatonated')))
+});
+
+// js: Browserify
+var js_srcFile = './src/js/main.js'
+var js_destFolder = './dist/js/'
+var js_destFile = 'mewify-master.js'
+var js_destFileMin = 'mewify-master.min.js'
+
+function bundle_js(bundler) {
+    return bundler.bundle()
+        .pipe(plumber({ errorHandler: onError }))
+        .pipe(source('main.js'))
+        .pipe(buffer())
+        .pipe(sourcemaps.init())
+        .pipe(rename(js_destFile))
+        .pipe(gulp.dest(js_destFolder))
+        .pipe(uglify())
+        .pipe(rename(js_destFileMin))
+        .pipe(sourcemaps.write('./maps/'))
+        .pipe(gulp.dest(js_destFolder))
+        .pipe(notify(onSuccess('JS Concatonated & Uglified')))
+}
 gulp.task('js', function() {
-  return gulp.src('./src/js/*.js')
-    .pipe(plumber({ errorHandler: onError }))
-    .pipe( sourcemaps.init() )
-    .pipe(gulpConcat('mewify-master.js'))
-    .pipe(gulp.dest('./js'))
-    .pipe(uglify())
-    .pipe(rename('mewify-master.min.js'))
-    .pipe(sourcemaps.write( '../js/maps/' )       )
-    .pipe(gulp.dest('./js'))
-    .pipe(notify('JS Concatonated & Uglified'))
-});
+    var bundler = browserify(js_srcFile)
+    bundle_js(bundler)
+})
 
 /* Watch Folders */
-var lessWatch     = './src/less/**/*.less';
-var jsWatch       = './src/js/*.js';
+var less_WatchFolder = './src/less/**/*.less';
+var js_watchFolder = './src/js/**/*.js'
+var js_nativeWatchFolder = './src/native/*.js'
 
 gulp.task('watch', function() {
-  gulp.watch(lessWatch, ['less']);
-  gulp.watch(jsWatch, ['js']);
+    gulp.watch(less_WatchFolder, ['less']);
+    gulp.watch(js_watchFolder, ['js']);
+    gulp.watch(js_nativeWatchFolder, ['nativeJS']);
 });
 
-gulp.task('default', ['less', 'js', 'watch']);
-gulp.task('build', ['less', 'js']);
+gulp.task('default', ['less', 'js', 'nativeJS', 'watch']);
+gulp.task('build', ['less', 'js', 'nativeJS']);

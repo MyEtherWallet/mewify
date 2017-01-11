@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.1
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -32980,3 +32981,21 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
+},{}],2:[function(require,module,exports){
+require('./angular');
+module.exports = angular;
+
+},{"./angular":1}],3:[function(require,module,exports){
+'use strict';
+var configCtrl = function($scope) {
+    $scope.port = "";
+};
+module.exports = configCtrl;
+},{}],4:[function(require,module,exports){
+var angular = require('angular');
+var configCtrl = require('./controllers/configCtrl');
+
+var app = angular.module('mewifyApp', []);
+app.controller('configCtrl', ['$scope', configCtrl]);
+
+},{"./controllers/configCtrl":3,"angular":2}]},{},[4]);
