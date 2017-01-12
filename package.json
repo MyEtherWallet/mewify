@@ -2,14 +2,16 @@
   "name": "mewify",
   "version": "1.0.0",
   "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
-  "main": "dist/index.html",
+  "main": "app/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nw .",
     "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
   },
   "window": {
-    "toolbar": true
+    "width": 500,
+    "height": 550,
+    "resizable": false
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^1.5.3",
+    "request": "^2.79.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
   }

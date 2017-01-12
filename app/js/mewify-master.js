@@ -1,4 +1,34 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports={
+    "port": 8545,
+    "ipc": {
+        "win": "",
+        "osx": "",
+        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+    },
+    "keystore": {
+        "win": "",
+        "osx": "",
+        "linux": "/home/kvhnuke/"
+    },
+    "mewPass": true,
+    "mewNodes": [
+        {
+            "name": "ETH",
+            "url": "https://api.myetherapi.com/eth"
+        },
+        {
+            "name": "Ropsten",
+            "url": "https://api.myetherapi.com/rop"
+        }
+    ],
+    "node": "https://api.myetherapi.com/eth"
+}
+},{}],2:[function(require,module,exports){
+module.exports={
+	"configFile" : "./configs/default.json"
+}
+},{}],3:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.1
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -32981,21 +33011,338 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],2:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":1}],3:[function(require,module,exports){
+},{"./angular":3}],5:[function(require,module,exports){
 'use strict';
 var configCtrl = function($scope) {
-    $scope.port = "";
+    $scope.clientConfig = configs.default;
+    $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+    $scope.showSave = false;
+    $scope.showStart = true;
+    $scope.showStop = false;
+    $scope.ipcProvider = null;
+    $scope.$watch('clientConfig', function() {
+        if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
+            $scope.showSave = true;
+        else
+            $scope.showSave = false;
+    }, true);
+    $scope.saveConfig = function() {
+        fileIO.writeFile(configs.paths.configFile, JSON.stringify($scope.clientConfig, null, 4), function(resp) {
+            if (resp.error)
+                Events.Error(resp.msg);
+            else {
+                $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+                $scope.showSave = false;
+                if (!$scope.$$phase) $scope.$apply();
+            }
+        });
+    }
+    $scope.start = function () {
+    	if(!$scope.ipcProvider) {
+    		fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
+    		$scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
+    		$scope.showStart = false;
+    		$scope.showStop = true;
+    	}
+    }
+    $scope.stop = function () {
+    	if($scope.ipcProvider) {
+    		$scope.ipcProvider.disconnect();
+    		$scope.showStart = true;
+    		$scope.showStop = false;
+    		$scope.ipcProvider = null;
+    	}
+    }
 };
 module.exports = configCtrl;
-},{}],4:[function(require,module,exports){
+
+},{}],6:[function(require,module,exports){
+/*
+    This file is part of web3.js.
+
+    web3.js is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    web3.js is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with web3.js.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/** 
+ * @file errors.js
+ * @author Marek Kotewicz <marek@ethdev.com>
+ * @date 2015
+ */
+
+module.exports = {
+    InvalidNumberOfParams: function () {
+        return new Error('Invalid number of input parameters');
+    },
+    InvalidConnection: function (host){
+        return new Error('CONNECTION ERROR: Couldn\'t connect to node '+ host +'.');
+    },
+    InvalidProvider: function () {
+        return new Error('Provider not set or invalid');
+    },
+    InvalidResponse: function (result){
+        var message = !!result && !!result.error && !!result.error.message ? result.error.message : 'Invalid JSON RPC response: ' + JSON.stringify(result);
+        return new Error(message);
+    },
+    ConnectionTimeout: function (ms){
+        return new Error('CONNECTION TIMEOUT: timeout of ' + ms + ' ms achived');
+    }
+};
+},{}],7:[function(require,module,exports){
+/*
+    This file is part of web3.js.
+
+    web3.js is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    web3.js is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with web3.js.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/** @file ipcprovider.js
+ * @authors:
+ *   Fabian Vogelsteller <fabian@ethdev.com>
+ * @date 2015
+ */
+
+"use strict";
+
+var errors = require('./ipcErrors');
+
+var IpcProvider = function(path, net) {
+    var _this = this;
+    this.responseCallbacks = {};
+    this.path = path;
+    this.clients = [];
+    this.rpcClient = new rpcClient(configs.default.node);
+    this.server = net.createServer(function(client) {
+        console.log("new Client");
+        client.rpcHandler = new rpcHandler(client, _this.rpcClient);
+        client.on('data', function(data) {
+            _this._parseResponse(data.toString()).forEach(function(result) {
+                console.log("new response", result);
+                client.rpcHandler.sendResponse(result);
+            });
+        });
+        client.on('end', function() {
+            _this.clients.splice(_this.clients.indexOf(client), 1);
+        });
+        _this.clients.push(client);
+    });
+    this.server.on('listening', function() {
+        console.log('Connection started');
+    });
+    this.server.on('close', function(e) {
+        console.log('Connection closed');
+    });
+    this.server.on('error', function(e) {
+        console.error('IPC Connection Error', e);
+    });
+    this.server.listen({ path: this.path });
+};
+
+IpcProvider.prototype._parseResponse = function(data) {
+    var _this = this,
+        returnValues = [];
+
+    // DE-CHUNKER
+    var dechunkedData = data
+        .replace(/\}[\n\r]?\{/g, '}|--|{') // }{
+        .replace(/\}\][\n\r]?\[\{/g, '}]|--|[{') // }][{
+        .replace(/\}[\n\r]?\[\{/g, '}|--|[{') // }[{
+        .replace(/\}\][\n\r]?\{/g, '}]|--|{') // }]{
+        .split('|--|');
+
+    dechunkedData.forEach(function(data) {
+        if (_this.lastChunk)
+            data = _this.lastChunk + data;
+        var result = null;
+        try {
+            result = JSON.parse(data);
+        } catch (e) {
+            return;
+        }
+        if (result)
+            returnValues.push(result);
+    });
+    return returnValues;
+};
+
+IpcProvider.prototype.isConnected = function() {
+    return this.server.listening;
+};
+
+IpcProvider.prototype.disconnect = function() {
+    this.server.close();
+};
+
+IpcProvider.prototype.send = function(payload) {
+    this.connection.write(JSON.stringify(payload));
+};
+
+module.exports = IpcProvider;
+
+},{"./ipcErrors":6}],8:[function(require,module,exports){
+module.exports=[
+    "web3_clientVersion",
+    "web3_sha3",
+    "eth_accounts",
+    "eth_sign",
+    "eth_sendTransaction",
+    "net_version",
+    "net_peerCount",
+    "eth_protocolVersion",
+    "eth_syncing",
+    "eth_gasPrice",
+    "eth_blockNumber",
+    "eth_getBalance",
+    "eth_getStorageAt",
+    "eth_getTransactionCount",
+    "eth_getBlockTransactionCountByHash",
+    "eth_getBlockTransactionCountByNumber",
+    "eth_getUncleCountByBlockHash",
+    "eth_getUncleCountByBlockNumber",
+    "eth_getCode",
+    "eth_sendRawTransaction",
+    "eth_call",
+    "eth_estimateGas",
+    "eth_getBlockByHash",
+    "eth_getBlockByNumber",
+    "eth_getTransactionByHash",
+    "eth_getTransactionByBlockHashAndIndex",
+    "eth_getTransactionByBlockNumberAndIndex",
+    "eth_getTransactionReceipt",
+    "eth_getUncleByBlockHashAndIndex",
+    "eth_getUncleByBlockNumberAndIndex",
+    "eth_getCompilers",
+    "eth_compileSolidity",
+    "eth_newFilter",
+	"eth_newBlockFilter",
+	"eth_newPendingTransactionFilter",
+	"eth_uninstallFilter",
+	"eth_getFilterChanges",
+	"eth_getFilterLogs",
+	"eth_getLogs",
+    "trace_call",
+    "trace_rawTransaction",
+    "trace_replayTransaction",
+    "trace_filter",
+    "trace_get",
+    "trace_transaction",
+    "trace_block"
+]
+},{}],9:[function(require,module,exports){
+module.exports=[
+    "eth_accounts",
+    "eth_sign",
+    "eth_sendTransaction"
+]
+
+},{}],10:[function(require,module,exports){
+"use strict";
+var rpcClient = function(server) {
+    this.server = server;
+    this.request = netIO.request.defaults({ jar: true });
+}
+rpcClient.prototype.call = function (body, callback) {
+    var _this = this;
+    _this.request({
+        url: _this.server,
+        method: "POST",
+        json: true, 
+        body: body
+    }, function(error, response, body) {
+        callback(error, response, body);
+    });
+}
+module.exports = rpcClient;
+
+},{}],11:[function(require,module,exports){
+"use strict";
+var rpcHandler = function(client, server) {
+    this.client = client;
+    this.server = server;
+}
+rpcHandler.prototype.sendResponse = function(req) {
+    var isArray = false;
+    var _this = this;
+    if (Array.isArray(req)) {
+        isArray = true;
+        for (var i in req) {
+            if (req[i].method && rpcHandler.allowedMethods.indexOf(req[i].method) == -1) {
+                this.write(this.getInvalidMethod(req[i].method, req[i].id));
+                return;
+            }
+        }
+    } else if (req.method && rpcHandler.allowedMethods.indexOf(req.method) == -1) {
+        this.write(this.getInvalidMethod(req.method, req.id));
+        return;
+    } else if (!req.method) {
+        this.write(this.getInvalidMethod('Invalid number of input parameters', req.id));
+        return;
+    }
+    if (!isArray && rpcHandler.privMethods.indexOf(req.method) != -1) {
+        if (req.method == "eth_accounts") {
+            _this.write({ jsonrpc: "2.0", result: [], id: req.id });
+        }
+    } else {
+        this.getResponse(req, function(res) {
+            _this.write(res);
+        });
+    }
+}
+rpcHandler.prototype.write = function(data) {
+    console.log("writing", data);
+    this.client.write(JSON.stringify(data));
+}
+rpcHandler.prototype.getResponse = function(body, callback) {
+    var _this = this;
+    _this.server.call(body, function(err, res, body) {
+        if (err) Events.Error(err);
+        else callback(body);
+    });
+}
+rpcHandler.getInvalidMethod = function(methodName, id) {
+    return { result: { "jsonrpc": "2.0", "error": { "code": -32601, "message": "{" + methodName + "} Method not found or unavailable", "data": null }, "id": id }, headers: [] };
+}
+rpcHandler.allowedMethods = require('./methods/allowedMethods.json');
+rpcHandler.privMethods = require('./methods/privMethods.json');
+module.exports = rpcHandler;
+
+},{"./methods/allowedMethods.json":8,"./methods/privMethods.json":9}],12:[function(require,module,exports){
 var angular = require('angular');
+var configs = {};
+configs.paths = require('../../configs/paths.json');
+configs.default = require('../../configs/default.json');
+window.configs = configs;
+var ipcProvider = require('./libs/ipcProvider');
+window.ipcProvider = ipcProvider;
+var rpcClient = require('./libs/rpcClient');
+window.rpcClient = rpcClient;
+var rpcHandler = require('./libs/rpcHandler');
+window.rpcHandler = rpcHandler;
 var configCtrl = require('./controllers/configCtrl');
 
 var app = angular.module('mewifyApp', []);
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"./controllers/configCtrl":3,"angular":2}]},{},[4]);
+},{"../../configs/default.json":1,"../../configs/paths.json":2,"./controllers/configCtrl":5,"./libs/ipcProvider":7,"./libs/rpcClient":10,"./libs/rpcHandler":11,"angular":4}]},{},[12]);

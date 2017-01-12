@@ -1,0 +1,25 @@
+{
+    "port": 8545,
+    "ipc": {
+        "win": "",
+        "osx": "",
+        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+    },
+    "keystore": {
+        "win": "",
+        "osx": "",
+        "linux": "/home/kvhnuke/"
+    },
+    "mewPass": true,
+    "mewNodes": [
+        {
+            "name": "ETH",
+            "url": "https://api.myetherapi.com/eth"
+        },
+        {
+            "name": "Ropsten",
+            "url": "https://api.myetherapi.com/rop"
+        }
+    ],
+    "node": "https://api.myetherapi.com/eth"
+}

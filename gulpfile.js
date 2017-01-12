@@ -42,20 +42,20 @@ gulp.task('less', function() {
             remove: false
         }))
         .pipe(rename('mewify-master.css'))
-        .pipe(gulp.dest('./dist/css'))
+        .pipe(gulp.dest('./app/css'))
         .pipe(cssnano({
             autoprefixer: false,
             safe: true
         }))
         .pipe(rename('mewify-master.min.css'))
         .pipe(sourcemaps.write('./maps/'))
-        .pipe(gulp.dest('./dist/css'))
+        .pipe(gulp.dest('./app/css'))
         .pipe(notify('Less Compiled, Prefixed, & Minified'));
 });
 
 // js: concat native
 var js_nativeSrcFiles = './src/native/*.js'
-var js_nativeDestFolder = './dist/js/'
+var js_nativeDestFolder = './app/js/'
 var js_nativeDestFile = 'mewify-native.js'
 var js_nativeDestFileMin = 'mewify-native.min.js'
 
@@ -75,7 +75,7 @@ gulp.task('nativeJS', function() {
 
 // js: Browserify
 var js_srcFile = './src/js/main.js'
-var js_destFolder = './dist/js/'
+var js_destFolder = './app/js/'
 var js_destFile = 'mewify-master.js'
 var js_destFileMin = 'mewify-master.min.js'
 

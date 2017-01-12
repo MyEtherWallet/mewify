@@ -1,0 +1,5 @@
+[
+    "eth_accounts",
+    "eth_sign",
+    "eth_sendTransaction"
+]
