@@ -4,7 +4,7 @@ module.exports={
     "ipc": {
         "win": "",
         "osx": "",
-        "linux": "/Users/tay/Library/Ethereum/geth.ipc"
+        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
     },
     "keystore": {
         "win": "",
@@ -33135,11 +33135,10 @@ var IpcProvider = function(path, net) {
     this.clients = [];
     this.rpcClient = new rpcClient(configs.default.node);
     this.server = net.createServer(function(client) {
-        console.log("new Client");
+        console.log("new Client! Total Clients: ", _this.clients.length);
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
             _this._parseResponse(data.toString()).forEach(function(result) {
-                console.log("new response", result);
                 client.rpcHandler.sendResponse(result);
             });
         });
@@ -33171,7 +33170,6 @@ IpcProvider.prototype._parseResponse = function(data) {
         .replace(/\}[\n\r]?\[\{/g, '}|--|[{') // }[{
         .replace(/\}\][\n\r]?\{/g, '}]|--|{') // }]{
         .split('|--|');
-
     dechunkedData.forEach(function(data) {
         if (_this.lastChunk)
             data = _this.lastChunk + data;
@@ -33179,6 +33177,7 @@ IpcProvider.prototype._parseResponse = function(data) {
         try {
             result = JSON.parse(data);
         } catch (e) {
+            _this.lastChunk = data;
             return;
         }
         if (result)
@@ -33206,7 +33205,7 @@ module.exports=[
     "web3_clientVersion",
     "web3_sha3",
     "eth_accounts",
-    "eht_coinbase",
+    "eth_coinbase",
     "eth_sign",
     "eth_sendTransaction",
     "net_version",
@@ -33288,26 +33287,28 @@ var rpcHandler = function(client, server) {
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
     var _this = this;
+    if(!Array.isArray(req)) console.log(req.method);
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
+            console.log(req[i].method);
             if (req[i].method && rpcHandler.allowedMethods.indexOf(req[i].method) == -1) {
-                this.write(this.getInvalidMethod(req[i].method, req[i].id));
+                this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 return;
             }
         }
     } else if (req.method && rpcHandler.allowedMethods.indexOf(req.method) == -1) {
-        this.write(this.getInvalidMethod(req.method, req.id));
+        this.write(rpcHandler.getInvalidMethod(req.method, req.id));
         return;
     } else if (!req.method) {
-        this.write(this.getInvalidMethod('Invalid number of input parameters', req.id));
+        this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
         return;
     }
     if (!isArray && rpcHandler.privMethods.indexOf(req.method) != -1) {
         if (req.method == "eth_accounts") {
             _this.write({ jsonrpc: "2.0", result: ['0x7cb57b5a97eabe94205c07890be4c1ad31e486a8'], id: req.id });
         } else if (req.method == "eth_coinbase") {
-          _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
+            _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
         }
     } else {
         this.getResponse(req, function(res) {
@@ -33316,8 +33317,9 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
-    console.log("writing", data);
-    this.client.write(JSON.stringify(data));
+    var _this = this;
+    _this.client.write(JSON.stringify(data));
+
 }
 rpcHandler.prototype.getResponse = function(body, callback) {
     var _this = this;

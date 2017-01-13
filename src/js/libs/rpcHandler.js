@@ -6,26 +6,28 @@ var rpcHandler = function(client, server) {
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
     var _this = this;
+    if(!Array.isArray(req)) console.log(req.method);
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
+            console.log(req[i].method);
             if (req[i].method && rpcHandler.allowedMethods.indexOf(req[i].method) == -1) {
-                this.write(this.getInvalidMethod(req[i].method, req[i].id));
+                this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 return;
             }
         }
     } else if (req.method && rpcHandler.allowedMethods.indexOf(req.method) == -1) {
-        this.write(this.getInvalidMethod(req.method, req.id));
+        this.write(rpcHandler.getInvalidMethod(req.method, req.id));
         return;
     } else if (!req.method) {
-        this.write(this.getInvalidMethod('Invalid number of input parameters', req.id));
+        this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
         return;
     }
     if (!isArray && rpcHandler.privMethods.indexOf(req.method) != -1) {
         if (req.method == "eth_accounts") {
             _this.write({ jsonrpc: "2.0", result: ['0x7cb57b5a97eabe94205c07890be4c1ad31e486a8'], id: req.id });
         } else if (req.method == "eth_coinbase") {
-          _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
+            _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
         }
     } else {
         this.getResponse(req, function(res) {
@@ -34,8 +36,9 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
-    console.log("writing", data);
-    this.client.write(JSON.stringify(data));
+    var _this = this;
+    _this.client.write(JSON.stringify(data));
+
 }
 rpcHandler.prototype.getResponse = function(body, callback) {
     var _this = this;

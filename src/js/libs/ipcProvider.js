@@ -31,11 +31,10 @@ var IpcProvider = function(path, net) {
     this.clients = [];
     this.rpcClient = new rpcClient(configs.default.node);
     this.server = net.createServer(function(client) {
-        console.log("new Client");
+        console.log("new Client! Total Clients: ", _this.clients.length);
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
             _this._parseResponse(data.toString()).forEach(function(result) {
-                console.log("new response", result);
                 client.rpcHandler.sendResponse(result);
             });
         });
@@ -67,7 +66,6 @@ IpcProvider.prototype._parseResponse = function(data) {
         .replace(/\}[\n\r]?\[\{/g, '}|--|[{') // }[{
         .replace(/\}\][\n\r]?\{/g, '}]|--|{') // }]{
         .split('|--|');
-
     dechunkedData.forEach(function(data) {
         if (_this.lastChunk)
             data = _this.lastChunk + data;
@@ -75,6 +73,7 @@ IpcProvider.prototype._parseResponse = function(data) {
         try {
             result = JSON.parse(data);
         } catch (e) {
+            _this.lastChunk = data;
             return;
         }
         if (result)
