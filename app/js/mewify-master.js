@@ -4,7 +4,7 @@ module.exports={
     "ipc": {
         "win": "",
         "osx": "",
-        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+        "linux": "/Users/tay/Library/Ethereum/geth.ipc"
     },
     "keystore": {
         "win": "",
@@ -33206,6 +33206,7 @@ module.exports=[
     "web3_clientVersion",
     "web3_sha3",
     "eth_accounts",
+    "eht_coinbase",
     "eth_sign",
     "eth_sendTransaction",
     "net_version",
@@ -33250,9 +33251,11 @@ module.exports=[
     "trace_transaction",
     "trace_block"
 ]
+
 },{}],9:[function(require,module,exports){
 module.exports=[
     "eth_accounts",
+    "eth_coinbase",
     "eth_sign",
     "eth_sendTransaction"
 ]
@@ -33302,7 +33305,9 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
     if (!isArray && rpcHandler.privMethods.indexOf(req.method) != -1) {
         if (req.method == "eth_accounts") {
-            _this.write({ jsonrpc: "2.0", result: [], id: req.id });
+            _this.write({ jsonrpc: "2.0", result: ['0x7cb57b5a97eabe94205c07890be4c1ad31e486a8'], id: req.id });
+        } else if (req.method == "eth_coinbase") {
+          _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
         }
     } else {
         this.getResponse(req, function(res) {

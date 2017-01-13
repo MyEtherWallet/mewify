@@ -3,7 +3,7 @@
     "ipc": {
         "win": "",
         "osx": "",
-        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+        "linux": "/Users/tay/Library/Ethereum/geth.ipc"
     },
     "keystore": {
         "win": "",

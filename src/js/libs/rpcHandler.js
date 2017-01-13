@@ -23,7 +23,9 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
     if (!isArray && rpcHandler.privMethods.indexOf(req.method) != -1) {
         if (req.method == "eth_accounts") {
-            _this.write({ jsonrpc: "2.0", result: [], id: req.id });
+            _this.write({ jsonrpc: "2.0", result: ['0x7cb57b5a97eabe94205c07890be4c1ad31e486a8'], id: req.id });
+        } else if (req.method == "eth_coinbase") {
+          _this.write({ jsonrpc: "2.0", result: '0x7cb57b5a97eabe94205c07890be4c1ad31e486a8', id: req.id });
         }
     } else {
         this.getResponse(req, function(res) {

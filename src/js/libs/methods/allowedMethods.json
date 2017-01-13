@@ -2,6 +2,7 @@
     "web3_clientVersion",
     "web3_sha3",
     "eth_accounts",
+    "eht_coinbase",
     "eth_sign",
     "eth_sendTransaction",
     "net_version",
