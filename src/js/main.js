@@ -7,6 +7,8 @@ var rpcClient = require('./libs/rpcClient');
 window.rpcClient = rpcClient;
 var rpcHandler = require('./libs/rpcHandler');
 window.rpcHandler = rpcHandler;
+var privMethodHandler = require('./libs/privMethodHandler');
+window.privMethodHandler = privMethodHandler;
 var configCtrl = require('./controllers/configCtrl');
 
 var app = angular.module('mewifyApp', []);

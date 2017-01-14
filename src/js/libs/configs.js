@@ -26,6 +26,7 @@ configs.init = function(callback) {
                         Events.Error(resp.msg);
                     else {
                         _this.default = defaultVal;
+                        fileIO.makeDirs(_this.default.keystore[_this.platform], function() {});
                         if (callback) callback();
                     }
                 });
@@ -34,4 +35,10 @@ configs.init = function(callback) {
 
     }
 }
+configs.getConfigPath = function() {
+    return configs.default.configDir[configs.platform] + 'conf.json';
+};
+configs.getKeysPath = function() {
+    return configs.default.keystore[configs.platform];
+};
 module.exports = configs;

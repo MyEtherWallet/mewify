@@ -17,7 +17,7 @@ var configCtrl = function($scope) {
             $scope.showSave = false;
     }, true);
     $scope.saveConfig = function() {
-        fileIO.writeFile(configs.paths.configFile, JSON.stringify($scope.clientConfig, null, 4), function(resp) {
+        fileIO.writeFile(configs.getConfigPath(), JSON.stringify($scope.clientConfig, null, 4), function(resp) {
             if (resp.error)
                 Events.Error(resp.msg);
             else {
@@ -29,8 +29,8 @@ var configCtrl = function($scope) {
     }
     $scope.start = function() {
         if (!$scope.ipcProvider) {
-            fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
-            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
+            fileIO.deleteFileSync($scope.clientConfig.ipc[$scope.configs.platform]);
+            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc[$scope.configs.platform], netIO.net);
             $scope.showStart = false;
             $scope.showStop = true;
         }

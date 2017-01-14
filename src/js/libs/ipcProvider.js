@@ -30,8 +30,11 @@ var IpcProvider = function(path, net) {
     this.path = path;
     this.clients = [];
     this.rpcClient = new rpcClient(configs.default.node);
+    rpcHandler.privMethodHandler = new privMethodHandler(this.rpcClient);
     this.server = net.createServer(function(client) {
-        console.log("new Client! Total Clients: ", _this.clients.length);
+        console.log("new Client! Total Clients: " + _this.clients.length);
+        Events.Info("new Client! Total Clients: " + _this.clients.length);
+        client.connected = true;
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
             _this._parseResponse(data.toString()).forEach(function(result) {
@@ -39,6 +42,7 @@ var IpcProvider = function(path, net) {
             });
         });
         client.on('end', function() {
+            client.connected = false;
             _this.clients.splice(_this.clients.indexOf(client), 1);
         });
         _this.clients.push(client);
@@ -47,6 +51,7 @@ var IpcProvider = function(path, net) {
         console.log('Connection started');
     });
     this.server.on('close', function(e) {
+        rpcHandler.privMethodHandler = null;
         console.log('Connection closed');
     });
     this.server.on('error', function(e) {

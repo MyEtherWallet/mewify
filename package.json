@@ -26,6 +26,7 @@
   "dependencies": {
     "angular": "^1.6.1",
     "browserify": "^13.3.0",
+    "ethereumjs-tx": "^1.2.2",
     "ethereumjs-wallet": "^0.6.0",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
@@ -38,6 +39,7 @@
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^1.5.3",
     "mkdirp": "^0.5.1",
+    "node-notifier": "^4.6.1",
     "request": "^2.79.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"

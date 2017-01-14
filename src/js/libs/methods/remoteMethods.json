@@ -1,10 +1,6 @@
 [
     "web3_clientVersion",
     "web3_sha3",
-    "eth_accounts",
-    "eth_coinbase",
-    "eth_sign",
-    "eth_sendTransaction",
     "net_version",
     "net_peerCount",
     "eth_protocolVersion",
