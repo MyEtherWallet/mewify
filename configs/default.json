@@ -1,24 +1,32 @@
 {
-    "port": 8545,
+    "httpPort": 8545,
+    "httpsPort": 8546,
     "ipc": {
-        "win": "",
-        "osx": "",
-        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+        "win32": "\\.\\pipe\\geth.ipc",
+        "osx": "[[HOME_DIR]]/Library/Ethereum/geth.ipc",
+        "linux": "[[HOME_DIR]]/.ethereum/geth.ipc"
     },
     "keystore": {
-        "win": "",
-        "osx": "",
-        "linux": "/home/kvhnuke/"
+        "win32": "[[HOME_DIR]]/mewify/keys/",
+        "osx": "[[HOME_DIR]]/mewify/keys/",
+        "linux": "[[HOME_DIR]]/mewify/keys/"
+    },
+    "configDir": {
+        "win32": "[[HOME_DIR]]/mewify/conf/",
+        "osx": "[[HOME_DIR]]/mewify/conf/",
+        "linux": "[[HOME_DIR]]/mewify/conf/"
     },
     "mewPass": true,
     "mewNodes": [
         {
             "name": "ETH",
-            "url": "https://api.myetherapi.com/eth"
+            "url": "https://api.myetherapi.com/eth",
+            "chainId": 1
         },
         {
             "name": "Ropsten",
-            "url": "https://api.myetherapi.com/rop"
+            "url": "https://api.myetherapi.com/rop",
+            "chainId": 3
         }
     ],
     "node": "https://api.myetherapi.com/eth"

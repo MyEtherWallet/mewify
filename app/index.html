@@ -9,8 +9,8 @@
     <meta name="author" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/mewify-master.min.css">
-    <script type="text/javascript" src="js/mewify-master.min.js"></script>
     <script type="text/javascript" src="js/mewify-native.min.js"></script>
+    <script type="text/javascript" src="js/mewify-master.min.js"></script>
     <link rel="apple-touch-icon" sizes="60x60" href="images/fav/apple-touch-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="76x76" href="images/fav/apple-touch-icon-76x76.png">
     <link rel="apple-touch-icon" sizes="120x120" href="images/fav/apple-touch-icon-120x120.png">
@@ -42,15 +42,17 @@
         <h1> Enter your Information </h1>
         <div class="form-group">
             <label>RPC port:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.port">
+            <input class="form-control" type="text" ng-model="clientConfig.httpPort">
+            <label>SSL RPC port:</label>
+            <input class="form-control" type="text" ng-model="clientConfig.httpsPort">
         </div>
         <div class="form-group">
             <label>IPC path:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.ipc.linux">
+            <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]">
         </div>
         <div class="form-group">
             <label>Keystore location:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.keystore.linux">
+            <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]">
         </div>
         <div class="form-group">
             <div class="checkbox">

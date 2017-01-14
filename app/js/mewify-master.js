@@ -1,34 +1,38 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports={
-    "port": 8545,
+    "httpPort": 8545,
+    "httpsPort": 8546,
     "ipc": {
-        "win": "",
-        "osx": "",
-        "linux": "/home/kvhnuke/.ethereum/geth.ipc"
+        "win32": "\\.\\pipe\\geth.ipc",
+        "osx": "[[HOME_DIR]]/Library/Ethereum/geth.ipc",
+        "linux": "[[HOME_DIR]]/.ethereum/geth.ipc"
     },
     "keystore": {
-        "win": "",
-        "osx": "",
-        "linux": "/home/kvhnuke/"
+        "win32": "[[HOME_DIR]]/mewify/keys/",
+        "osx": "[[HOME_DIR]]/mewify/keys/",
+        "linux": "[[HOME_DIR]]/mewify/keys/"
+    },
+    "configDir": {
+        "win32": "[[HOME_DIR]]/mewify/conf/",
+        "osx": "[[HOME_DIR]]/mewify/conf/",
+        "linux": "[[HOME_DIR]]/mewify/conf/"
     },
     "mewPass": true,
     "mewNodes": [
         {
             "name": "ETH",
-            "url": "https://api.myetherapi.com/eth"
+            "url": "https://api.myetherapi.com/eth",
+            "chainId": 1
         },
         {
             "name": "Ropsten",
-            "url": "https://api.myetherapi.com/rop"
+            "url": "https://api.myetherapi.com/rop",
+            "chainId": 3
         }
     ],
     "node": "https://api.myetherapi.com/eth"
 }
 },{}],2:[function(require,module,exports){
-module.exports={
-	"configFile" : "./configs/default.json"
-}
-},{}],3:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.1
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -33011,15 +33015,19 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":3}],5:[function(require,module,exports){
+},{"./angular":2}],4:[function(require,module,exports){
 'use strict';
 var configCtrl = function($scope) {
-    $scope.clientConfig = configs.default;
-    $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+    configs.init(function() {
+        $scope.configs = configs;
+        $scope.clientConfig = $scope.configs.default;
+        $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+        if (!$scope.$$phase) $scope.$apply();
+    });
     $scope.showSave = false;
     $scope.showStart = true;
     $scope.showStop = false;
@@ -33041,26 +33049,65 @@ var configCtrl = function($scope) {
             }
         });
     }
-    $scope.start = function () {
-    	if(!$scope.ipcProvider) {
-    		fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
-    		$scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
-    		$scope.showStart = false;
-    		$scope.showStop = true;
-    	}
+    $scope.start = function() {
+        if (!$scope.ipcProvider) {
+            fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
+            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
+            $scope.showStart = false;
+            $scope.showStop = true;
+        }
     }
-    $scope.stop = function () {
-    	if($scope.ipcProvider) {
-    		$scope.ipcProvider.disconnect();
-    		$scope.showStart = true;
-    		$scope.showStop = false;
-    		$scope.ipcProvider = null;
-    	}
+    $scope.stop = function() {
+        if ($scope.ipcProvider) {
+            $scope.ipcProvider.disconnect();
+            $scope.showStart = true;
+            $scope.showStop = false;
+            $scope.ipcProvider = null;
+        }
     }
 };
 module.exports = configCtrl;
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+"use strict";
+var configs = function() {}
+configs.init = function(callback) {
+    var _this = this;
+    this.platform = os.platform();
+    this.homeDir = os.homedir();
+    var defaultVal = require('../../../configs/default.json');
+    defaultVal.configDir[this.platform] = defaultVal.configDir[this.platform].replace('[[HOME_DIR]]', this.homeDir);
+    defaultVal.ipc[this.platform] = defaultVal.ipc[this.platform].replace('[[HOME_DIR]]', this.homeDir);
+    defaultVal.keystore[this.platform] = defaultVal.keystore[this.platform].replace('[[HOME_DIR]]', this.homeDir);
+    this.paths = {};
+    this.paths.configFile = defaultVal.configDir[this.platform] + 'conf.json';
+    if (fileIO.existsSync(this.paths.configFile)) {
+        fileIO.readFile(this.paths.configFile, function(data) {
+            if (data.error) Events.Error(data.msg);
+            else {
+                _this.default = JSON.parse(data.data);
+                if (callback) callback();
+            }
+        });
+    } else {
+        fileIO.makeDirs(defaultVal.configDir[this.platform], function(data) {
+            if (!data.error) {
+                fileIO.writeFile(_this.paths.configFile, JSON.stringify(defaultVal, null, 4), function(resp) {
+                    if (resp.error)
+                        Events.Error(resp.msg);
+                    else {
+                        _this.default = defaultVal;
+                        if (callback) callback();
+                    }
+                });
+            } else Events.Error(data.msg);
+        });
+
+    }
+}
+module.exports = configs;
+
+},{"../../../configs/default.json":1}],6:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -33337,9 +33384,7 @@ module.exports = rpcHandler;
 
 },{"./methods/allowedMethods.json":8,"./methods/privMethods.json":9}],12:[function(require,module,exports){
 var angular = require('angular');
-var configs = {};
-configs.paths = require('../../configs/paths.json');
-configs.default = require('../../configs/default.json');
+var configs = require('./libs/configs');
 window.configs = configs;
 var ipcProvider = require('./libs/ipcProvider');
 window.ipcProvider = ipcProvider;
@@ -33352,4 +33397,4 @@ var configCtrl = require('./controllers/configCtrl');
 var app = angular.module('mewifyApp', []);
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"../../configs/default.json":1,"../../configs/paths.json":2,"./controllers/configCtrl":5,"./libs/ipcProvider":7,"./libs/rpcClient":10,"./libs/rpcHandler":11,"angular":4}]},{},[12]);
+},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":7,"./libs/rpcClient":10,"./libs/rpcHandler":11,"angular":3}]},{},[12]);

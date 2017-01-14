@@ -1,7 +1,11 @@
 'use strict';
 var configCtrl = function($scope) {
-    $scope.clientConfig = configs.default;
-    $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+    configs.init(function() {
+        $scope.configs = configs;
+        $scope.clientConfig = $scope.configs.default;
+        $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
+        if (!$scope.$$phase) $scope.$apply();
+    });
     $scope.showSave = false;
     $scope.showStart = true;
     $scope.showStop = false;
@@ -23,21 +27,21 @@ var configCtrl = function($scope) {
             }
         });
     }
-    $scope.start = function () {
-    	if(!$scope.ipcProvider) {
-    		fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
-    		$scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
-    		$scope.showStart = false;
-    		$scope.showStop = true;
-    	}
+    $scope.start = function() {
+        if (!$scope.ipcProvider) {
+            fileIO.deleteFileSync($scope.clientConfig.ipc.linux);
+            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc.linux, netIO.net);
+            $scope.showStart = false;
+            $scope.showStop = true;
+        }
     }
-    $scope.stop = function () {
-    	if($scope.ipcProvider) {
-    		$scope.ipcProvider.disconnect();
-    		$scope.showStart = true;
-    		$scope.showStop = false;
-    		$scope.ipcProvider = null;
-    	}
+    $scope.stop = function() {
+        if ($scope.ipcProvider) {
+            $scope.ipcProvider.disconnect();
+            $scope.showStart = true;
+            $scope.showStop = false;
+            $scope.ipcProvider = null;
+        }
     }
 };
 module.exports = configCtrl;

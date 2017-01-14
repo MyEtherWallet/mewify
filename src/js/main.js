@@ -1,7 +1,5 @@
 var angular = require('angular');
-var configs = {};
-configs.paths = require('../../configs/paths.json');
-configs.default = require('../../configs/default.json');
+var configs = require('./libs/configs');
 window.configs = configs;
 var ipcProvider = require('./libs/ipcProvider');
 window.ipcProvider = ipcProvider;
