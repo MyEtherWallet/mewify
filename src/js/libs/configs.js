@@ -41,4 +41,13 @@ configs.getConfigPath = function() {
 configs.getKeysPath = function() {
     return configs.default.keystore[configs.platform];
 };
+configs.getNodeUrl = function() {
+    return JSON.parse(configs.default.node).url;
+};
+configs.getNodeName = function() {
+    return JSON.parse(configs.default.node).name;
+};
+configs.getNodeChainId = function() {
+    return JSON.parse(configs.default.node).chainId;
+};
 module.exports = configs;

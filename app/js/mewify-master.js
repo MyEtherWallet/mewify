@@ -33112,50 +33112,18 @@ configs.getConfigPath = function() {
 configs.getKeysPath = function() {
     return configs.default.keystore[configs.platform];
 };
+configs.getNodeUrl = function() {
+    return JSON.parse(configs.default.node).url;
+};
+configs.getNodeName = function() {
+    return JSON.parse(configs.default.node).name;
+};
+configs.getNodeChainId = function() {
+    return JSON.parse(configs.default.node).chainId;
+};
 module.exports = configs;
 
 },{"../../../configs/default.json":1}],6:[function(require,module,exports){
-/*
-    This file is part of web3.js.
-
-    web3.js is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    web3.js is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with web3.js.  If not, see <http://www.gnu.org/licenses/>.
-*/
-/** 
- * @file errors.js
- * @author Marek Kotewicz <marek@ethdev.com>
- * @date 2015
- */
-
-module.exports = {
-    InvalidNumberOfParams: function () {
-        return new Error('Invalid number of input parameters');
-    },
-    InvalidConnection: function (host){
-        return new Error('CONNECTION ERROR: Couldn\'t connect to node '+ host +'.');
-    },
-    InvalidProvider: function () {
-        return new Error('Provider not set or invalid');
-    },
-    InvalidResponse: function (result){
-        var message = !!result && !!result.error && !!result.error.message ? result.error.message : 'Invalid JSON RPC response: ' + JSON.stringify(result);
-        return new Error(message);
-    },
-    ConnectionTimeout: function (ms){
-        return new Error('CONNECTION TIMEOUT: timeout of ' + ms + ' ms achived');
-    }
-};
-},{}],7:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -33180,15 +33148,12 @@ module.exports = {
 
 "use strict";
 
-var errors = require('./ipcErrors');
-
 var IpcProvider = function(path, net) {
     var _this = this;
     this.responseCallbacks = {};
     this.path = path;
     this.clients = [];
-    this.rpcClient = new rpcClient(configs.default.node);
-    rpcHandler.privMethodHandler = new privMethodHandler(this.rpcClient);
+    this.rpcClient = new rpcClient(configs.getNodeUrl());
     this.server = net.createServer(function(client) {
         console.log("new Client! Total Clients: " + _this.clients.length);
         Events.Info("new Client! Total Clients: " + _this.clients.length);
@@ -33209,7 +33174,6 @@ var IpcProvider = function(path, net) {
         console.log('Connection started');
     });
     this.server.on('close', function(e) {
-        rpcHandler.privMethodHandler = null;
         console.log('Connection closed');
     });
     this.server.on('error', function(e) {
@@ -33219,6 +33183,7 @@ var IpcProvider = function(path, net) {
 };
 
 IpcProvider.prototype._parseResponse = function(data) {
+    //console.log(data);
     var _this = this,
         returnValues = [];
 
@@ -33259,7 +33224,7 @@ IpcProvider.prototype.send = function(payload) {
 
 module.exports = IpcProvider;
 
-},{"./ipcErrors":6}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports=[
     "eth_accounts",
     "eth_coinbase",
@@ -33271,7 +33236,7 @@ module.exports=[
     "personal_signAndSendTransaction"
 ]
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports=[
     "web3_clientVersion",
     "web3_sha3",
@@ -33318,7 +33283,7 @@ module.exports=[
     "trace_block"
 ]
 
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 var privMethodHandler = function(server) {
     var _this = this;
@@ -33330,6 +33295,7 @@ var privMethodHandler = function(server) {
         "eth_coinbase": 'ethCoinbase',
         "personal_signAndSendTransaction": 'signAndSendTransaction'
     }
+    _this.ethAccounts('', function() {});
 }
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
@@ -33378,15 +33344,23 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                 if (data.error) callback(data);
                 else {
                     try {
-                        var tempWallet = ethereum.Wallet.fromV3(data.data, params[1], true);
-                        var tx = new ethereum.Tx(params[0]);
-                        tx.sign(tempWallet.getPrivateKey());
-                        var rawTx = tx.serialize().toString('hex');
-                        console.log(rawTx);
-                        _this.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": rawTx.substring(0, 24) }, function(data) {
-                            console.log(data);
-                            if(data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-                            else callback(privMethodHandler.getCallbackObj(false, '', data.result));
+                        var tempWallet = ethUtil.Wallet.fromV3(data.data, params[1], true);
+                        _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
+                            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                            else {
+                                params[0].nonce = data.result;
+                                params[0].chainId = configs.getNodeChainId();
+                                console.log(params[0]);
+                                var tx = new ethUtil.Tx(params[0]);
+                                tx.sign(tempWallet.getPrivateKey());
+                                var rawTx = tx.serialize().toString('hex');
+                                console.log(rawTx);
+                                _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
+                                    console.log(data);
+                                    if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                                    else callback(privMethodHandler.getCallbackObj(false, '', data.result));
+                                });
+                            }
                         });
                     } catch (err) {
                         Events.Error(err.message);
@@ -33397,13 +33371,6 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
         }
     });
 
-}
-privMethodHandler.prototype.getResponse = function(body, callback) {
-    var _this = this;
-    _this.server.call(body, function(err, res, body) {
-        if (err) Events.Error(err);
-        else callback(body);
-    });
 }
 privMethodHandler.getCallbackObj = function(isError, msg, data) {
     return { error: isError, msg: msg, data: data };
@@ -33420,9 +33387,12 @@ privMethodHandler.isJSON = function(json) {
     }
     return true;
 }
+privMethodHandler.getRandomId = function() {
+    return ethUtil.crypto.randomBytes(16).toString('hex');
+}
 module.exports = privMethodHandler;
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 var rpcClient = function(server) {
     this.server = server;
@@ -33439,13 +33409,21 @@ rpcClient.prototype.call = function (body, callback) {
         callback(error, response, body);
     });
 }
+rpcClient.prototype.getResponse = function(body, callback) {
+    var _this = this;
+    _this.call(body, function(err, res, body) {
+        if (err) Events.Error(err);
+        else callback(body);
+    });
+}
 module.exports = rpcClient;
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
+    this.privMethodHandler = new privMethodHandler(server);
 }
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
@@ -33453,14 +33431,15 @@ rpcHandler.prototype.sendResponse = function(req) {
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
-            //console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
+                console.log(req[i].method, req[i]);
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
             }
             if (req[i].method && rpcHandler.isPrivMethod(req[i].method)) {
+                console.log(req[i].method, req[i]);
                 var handlePriv = function(treq) {
-                    rpcHandler.privMethodHandler.handle(treq.method, treq.params, function(data) {
+                    _this.privMethodHandler.handle(treq.method, treq.params, function(data) {
                         if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, treq.id))
                         else {
                             _this.write(rpcHandler.getResultMsg(data.data, treq.id));
@@ -33478,20 +33457,19 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
     if (Array.isArray(req)) {
         if (req.length)
-            this.getResponse(req, function(res) {
+            _this.server.getResponse(req, function(res) {
                 _this.write(res);
             });
     } else {
-        console.log(req.method, req);
         if (rpcHandler.isPrivMethod(req.method)) {
-            rpcHandler.privMethodHandler.handle(req.method, req.params, function(data) {
+            _this.privMethodHandler.handle(req.method, req.params, function(data) {
                 if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, req.id))
                 else {
                     _this.write(rpcHandler.getResultMsg(data.data, req.id));
                 }
             });
         } else {
-            this.getResponse(req, function(res) {
+            _this.server.getResponse(req, function(res) {
                 _this.write(res);
             });
         }
@@ -33502,13 +33480,6 @@ rpcHandler.prototype.write = function(data) {
     if (_this.client.connected)
         _this.client.write(JSON.stringify(data));
 
-}
-rpcHandler.prototype.getResponse = function(body, callback) {
-    var _this = this;
-    _this.server.call(body, function(err, res, body) {
-        if (err) Events.Error(err);
-        else callback(body);
-    });
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
     Events.Error("{" + methodName + "} Method not found or unavailable");
@@ -33529,10 +33500,9 @@ rpcHandler.isAllowedMethod = function(method) {
 }
 rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
-rpcHandler.privMethodHandler = null;
 module.exports = rpcHandler;
 
-},{"./methods/privMethods.json":8,"./methods/remoteMethods.json":9}],13:[function(require,module,exports){
+},{"./methods/privMethods.json":7,"./methods/remoteMethods.json":8}],12:[function(require,module,exports){
 var angular = require('angular');
 var configs = require('./libs/configs');
 window.configs = configs;
@@ -33549,4 +33519,4 @@ var configCtrl = require('./controllers/configCtrl');
 var app = angular.module('mewifyApp', []);
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":7,"./libs/privMethodHandler":10,"./libs/rpcClient":11,"./libs/rpcHandler":12,"angular":3}]},{},[13]);
+},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":6,"./libs/privMethodHandler":9,"./libs/rpcClient":10,"./libs/rpcHandler":11,"angular":3}]},{},[12]);

@@ -73,6 +73,9 @@ Events.Info = function(msg) {
 var netIO = {};
 netIO.net = require('net');
 netIO.request = require('request');
-var ethereum = {}
-ethereum.Wallet = require('ethereumjs-wallet');
-ethereum.Tx = require('ethereumjs-tx');
+
+var ethUtil = require('ethereumjs-util');
+ethUtil.crypto = require('crypto');
+ethUtil.Wallet = require('ethereumjs-wallet');
+ethUtil.Tx = require('ethereumjs-tx');
+window.ethUtil = ethUtil;

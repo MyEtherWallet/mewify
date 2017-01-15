@@ -63,7 +63,7 @@
         <div class="form-group">
             <label>MEW Node:</label>
             <select ng-model="clientConfig.node" class="form-control">
-                <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node.url}}">{{node.name}}</option>
+                <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node}}">{{node.name}}</option>
             </select>
         </div>
         <div class="form-group ">

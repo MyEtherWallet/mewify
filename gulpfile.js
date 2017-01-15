@@ -12,9 +12,11 @@ var uglify = require('gulp-uglify');
 var browserify = require('browserify')
 var source = require('vinyl-source-stream')
 var buffer = require('vinyl-buffer')
+var babelify = require('babelify')
 
 /* Errors */
 function onError(error) {
+    console.log(error);
     notify.onError({
         title: "Gulp",
         subtitle: "Failure!",
@@ -78,6 +80,11 @@ var js_srcFile = './src/js/main.js'
 var js_destFolder = './app/js/'
 var js_destFile = 'mewify-master.js'
 var js_destFileMin = 'mewify-master.min.js'
+var babelOpts = {
+    presets: ['es2015'],
+    compact: false,
+    global: true
+}
 
 function bundle_js(bundler) {
     return bundler.bundle()

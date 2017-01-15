@@ -2,6 +2,7 @@
 var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
+    this.privMethodHandler = new privMethodHandler(server);
 }
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
@@ -9,14 +10,15 @@ rpcHandler.prototype.sendResponse = function(req) {
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
-            //console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
+                console.log(req[i].method, req[i]);
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
             }
             if (req[i].method && rpcHandler.isPrivMethod(req[i].method)) {
+                console.log(req[i].method, req[i]);
                 var handlePriv = function(treq) {
-                    rpcHandler.privMethodHandler.handle(treq.method, treq.params, function(data) {
+                    _this.privMethodHandler.handle(treq.method, treq.params, function(data) {
                         if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, treq.id))
                         else {
                             _this.write(rpcHandler.getResultMsg(data.data, treq.id));
@@ -34,20 +36,19 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
     if (Array.isArray(req)) {
         if (req.length)
-            this.getResponse(req, function(res) {
+            _this.server.getResponse(req, function(res) {
                 _this.write(res);
             });
     } else {
-        console.log(req.method, req);
         if (rpcHandler.isPrivMethod(req.method)) {
-            rpcHandler.privMethodHandler.handle(req.method, req.params, function(data) {
+            _this.privMethodHandler.handle(req.method, req.params, function(data) {
                 if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, req.id))
                 else {
                     _this.write(rpcHandler.getResultMsg(data.data, req.id));
                 }
             });
         } else {
-            this.getResponse(req, function(res) {
+            _this.server.getResponse(req, function(res) {
                 _this.write(res);
             });
         }
@@ -58,13 +59,6 @@ rpcHandler.prototype.write = function(data) {
     if (_this.client.connected)
         _this.client.write(JSON.stringify(data));
 
-}
-rpcHandler.prototype.getResponse = function(body, callback) {
-    var _this = this;
-    _this.server.call(body, function(err, res, body) {
-        if (err) Events.Error(err);
-        else callback(body);
-    });
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
     Events.Error("{" + methodName + "} Method not found or unavailable");
@@ -85,5 +79,4 @@ rpcHandler.isAllowedMethod = function(method) {
 }
 rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
-rpcHandler.privMethodHandler = null;
 module.exports = rpcHandler;

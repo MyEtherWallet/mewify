@@ -22,15 +22,12 @@
 
 "use strict";
 
-var errors = require('./ipcErrors');
-
 var IpcProvider = function(path, net) {
     var _this = this;
     this.responseCallbacks = {};
     this.path = path;
     this.clients = [];
-    this.rpcClient = new rpcClient(configs.default.node);
-    rpcHandler.privMethodHandler = new privMethodHandler(this.rpcClient);
+    this.rpcClient = new rpcClient(configs.getNodeUrl());
     this.server = net.createServer(function(client) {
         console.log("new Client! Total Clients: " + _this.clients.length);
         Events.Info("new Client! Total Clients: " + _this.clients.length);
@@ -51,7 +48,6 @@ var IpcProvider = function(path, net) {
         console.log('Connection started');
     });
     this.server.on('close', function(e) {
-        rpcHandler.privMethodHandler = null;
         console.log('Connection closed');
     });
     this.server.on('error', function(e) {
@@ -61,6 +57,7 @@ var IpcProvider = function(path, net) {
 };
 
 IpcProvider.prototype._parseResponse = function(data) {
+    //console.log(data);
     var _this = this,
         returnValues = [];
 
