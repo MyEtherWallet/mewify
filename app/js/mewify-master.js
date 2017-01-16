@@ -33285,6 +33285,47 @@ module.exports=[
 
 },{}],9:[function(require,module,exports){
 "use strict";
+var parityOutputProcessor = function() {
+    this.processMethods = {
+        "eth_getTransactionReceipt": "ethGetTransactionReceipt"
+    };
+    this.queue = {};
+}
+parityOutputProcessor.prototype.preProcess = function(req) {;
+    var _this = this;
+    if (Array.isArray(req)) {
+        req.forEach(function(obj) {
+            if (_this.processMethods[obj.method]) {
+                _this.queue[obj.id] = _this.processMethods[obj.method];
+            }
+        });
+    } else if (_this.processMethods[req.method]) {
+        _this.queue[req.id] = _this.processMethods[req.method];
+    }
+}
+parityOutputProcessor.prototype.postProcess = function(resp) {
+    var _this = this;
+    if (Array.isArray(resp)) {
+        resp.forEach(function(obj) {
+            if (_this.queue[obj.id]) {
+                obj = parityOutputProcessor[_this.queue[obj.id]](obj);
+                delete _this.queue[obj.id];
+            }
+        });
+    } else if (_this.queue[resp.id]) {
+        resp = parityOutputProcessor[_this.queue[resp.id]](resp);
+        delete _this.queue[resp.id];
+    }
+    return resp;
+}
+parityOutputProcessor.ethGetTransactionReceipt = function(obj) {
+    if (obj.result && !obj.result.blockNumber) obj.result = null;
+    return obj;
+}
+module.exports = parityOutputProcessor;
+
+},{}],10:[function(require,module,exports){
+"use strict";
 var privMethodHandler = function(server) {
     var _this = this;
     this.server = server;
@@ -33392,18 +33433,19 @@ privMethodHandler.getRandomId = function() {
 }
 module.exports = privMethodHandler;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 var rpcClient = function(server) {
     this.server = server;
     this.request = netIO.request.defaults({ jar: true });
+    this.parityOutputProcessor = new parityOutputProcessor();
 }
-rpcClient.prototype.call = function (body, callback) {
+rpcClient.prototype.call = function(body, callback) {
     var _this = this;
     _this.request({
         url: _this.server,
         method: "POST",
-        json: true, 
+        json: true,
         body: body
     }, function(error, response, body) {
         callback(error, response, body);
@@ -33411,14 +33453,18 @@ rpcClient.prototype.call = function (body, callback) {
 }
 rpcClient.prototype.getResponse = function(body, callback) {
     var _this = this;
+    _this.parityOutputProcessor.preProcess(body);
     _this.call(body, function(err, res, body) {
         if (err) Events.Error(err);
-        else callback(body);
+        else {
+            body = _this.parityOutputProcessor.postProcess(body);
+            callback(body);
+        }
     });
 }
 module.exports = rpcClient;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 var rpcHandler = function(client, server) {
     this.client = client;
@@ -33502,7 +33548,7 @@ rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
 module.exports = rpcHandler;
 
-},{"./methods/privMethods.json":7,"./methods/remoteMethods.json":8}],12:[function(require,module,exports){
+},{"./methods/privMethods.json":7,"./methods/remoteMethods.json":8}],13:[function(require,module,exports){
 var angular = require('angular');
 var configs = require('./libs/configs');
 window.configs = configs;
@@ -33514,9 +33560,11 @@ var rpcHandler = require('./libs/rpcHandler');
 window.rpcHandler = rpcHandler;
 var privMethodHandler = require('./libs/privMethodHandler');
 window.privMethodHandler = privMethodHandler;
+var parityOutputProcessor = require('./libs/parityOutputProcessor');
+window.parityOutputProcessor = parityOutputProcessor;
 var configCtrl = require('./controllers/configCtrl');
 
 var app = angular.module('mewifyApp', []);
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":6,"./libs/privMethodHandler":9,"./libs/rpcClient":10,"./libs/rpcHandler":11,"angular":3}]},{},[12]);
+},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":6,"./libs/parityOutputProcessor":9,"./libs/privMethodHandler":10,"./libs/rpcClient":11,"./libs/rpcHandler":12,"angular":3}]},{},[13]);

@@ -9,6 +9,8 @@ var rpcHandler = require('./libs/rpcHandler');
 window.rpcHandler = rpcHandler;
 var privMethodHandler = require('./libs/privMethodHandler');
 window.privMethodHandler = privMethodHandler;
+var parityOutputProcessor = require('./libs/parityOutputProcessor');
+window.parityOutputProcessor = parityOutputProcessor;
 var configCtrl = require('./controllers/configCtrl');
 
 var app = angular.module('mewifyApp', []);
