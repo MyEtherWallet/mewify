@@ -38,6 +38,9 @@ configs.init = function(callback) {
 configs.getConfigPath = function() {
     return configs.default.configDir[configs.platform] + 'conf.json';
 };
+configs.getConfigDir = function() {
+    return configs.default.configDir[configs.platform];
+};
 configs.getKeysPath = function() {
     return configs.default.keystore[configs.platform];
 };

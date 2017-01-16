@@ -6,5 +6,6 @@
     "personal_listAccounts",
     "personal_newAccount",
     "personal_sendTransaction",
-    "personal_signAndSendTransaction"
+    "personal_signAndSendTransaction",
+    "rpc_modules"
 ]

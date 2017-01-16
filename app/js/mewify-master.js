@@ -33031,7 +33031,7 @@ var configCtrl = function($scope) {
     $scope.showStart = true;
     $scope.showStop = false;
     $scope.disableForm = false;
-    $scope.ipcProvider = null;
+    $scope.clientHandler = null;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
             $scope.showSave = true;
@@ -33050,20 +33050,19 @@ var configCtrl = function($scope) {
         });
     }
     $scope.start = function() {
-        if (!$scope.ipcProvider) {
-            fileIO.deleteFileSync($scope.clientConfig.ipc[$scope.configs.platform]);
-            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc[$scope.configs.platform], netIO.net);
+        if (!$scope.clientHandler) {
+            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
             $scope.showStart = false;
             $scope.showStop = true;
             $scope.disableForm = true;
         }
     }
     $scope.stop = function() {
-        if ($scope.ipcProvider) {
-            $scope.ipcProvider.disconnect();
+        if ($scope.clientHandler) {
+            $scope.clientHandler.disconnect();
             $scope.showStart = true;
             $scope.showStop = false;
-            $scope.ipcProvider = null;
+            $scope.clientHandler = null;
             $scope.disableForm = false;
         }
     }
@@ -33071,6 +33070,21 @@ var configCtrl = function($scope) {
 module.exports = configCtrl;
 
 },{}],5:[function(require,module,exports){
+"use strict";
+var ipcProvider = require('./ipcProvider');
+var httpProvider = require('./httpProvider');
+var clientHandler = function(path, httpPort, httpsPort) {
+    fileIO.deleteFileSync(path);
+    this.ipcProvider = new ipcProvider(path, netIO.net);
+    this.httpProvider = new httpProvider(httpPort, httpsPort);
+}
+clientHandler.prototype.disconnect = function(){
+    this.ipcProvider.disconnect();
+    this.httpProvider.disconnect();
+}
+module.exports = clientHandler;
+
+},{"./httpProvider":7,"./ipcProvider":8}],6:[function(require,module,exports){
 "use strict";
 var configs = function() {}
 configs.init = function(callback) {
@@ -33111,6 +33125,9 @@ configs.init = function(callback) {
 configs.getConfigPath = function() {
     return configs.default.configDir[configs.platform] + 'conf.json';
 };
+configs.getConfigDir = function() {
+    return configs.default.configDir[configs.platform];
+};
 configs.getKeysPath = function() {
     return configs.default.keystore[configs.platform];
 };
@@ -33125,7 +33142,68 @@ configs.getNodeChainId = function() {
 };
 module.exports = configs;
 
-},{"../../../configs/default.json":1}],6:[function(require,module,exports){
+},{"../../../configs/default.json":1}],7:[function(require,module,exports){
+"use strict";
+var rpcClient = require('./rpcClient');
+var rpcHandler = require('./rpcHandler');
+var httpProvider = function(httpPort, httpsPort) {
+	this.rpcClient = new rpcClient(configs.getNodeUrl());
+	var _this = this;
+    var app = netIO.express();
+    app.use(netIO.bodyParser.json());
+    var _this = this;
+    app.post('/', function(req, res) {
+    	res.connected = true;
+        res.connType = "http";
+        new rpcHandler(res, _this.rpcClient).sendResponse(req.body);
+    });
+    try {
+        _this.httpServer = netIO.http.createServer(app);
+        _this.httpServer.listen(httpPort);
+        console.log("http server started");
+    } catch (e) {
+        console.log(e);
+        Events.Error(e.message);
+    }
+    var startSSL = function(keys) {
+        try {
+            _this.httpsServer = netIO.https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
+            _this.httpsServer.listen(httpsPort);
+            console.log("https server started");
+        } catch (e) {
+            console.log(e);
+            Events.Error(e.message);
+        }
+    }
+    var sslKeyPath = configs.getConfigDir() + 'ssl_key';
+    if (fileIO.existsSync(sslKeyPath)) {
+        fileIO.readFile(sslKeyPath, function(data) {
+            if (data.error) Events.Error(data.msg);
+            else {
+                var sslkey = JSON.parse(data.data);
+                startSSL(sslkey);
+            }
+        });
+    } else {
+        netIO.pem.createCertificate({ days: 3650, selfSigned: true }, function(err, keys) {
+            fileIO.writeFile(sslKeyPath, JSON.stringify(keys, null, 4), function(resp) {
+                if (resp.error) Events.Error(resp.msg);
+            });
+            startSSL(keys);
+        });
+    }
+
+}
+httpProvider.prototype.disconnect = function() {
+    if (this.httpServer) this.httpServer.close();
+    console.log("http server closed");
+    if (this.httpsServer) this.httpsServer.close();
+    console.log("https server closed");
+}
+
+module.exports = httpProvider;
+
+},{"./rpcClient":13,"./rpcHandler":14}],8:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -33149,7 +33227,8 @@ module.exports = configs;
  */
 
 "use strict";
-
+var rpcClient = require('./rpcClient');
+var rpcHandler = require('./rpcHandler');
 var IpcProvider = function(path, net) {
     var _this = this;
     this.responseCallbacks = {};
@@ -33160,9 +33239,9 @@ var IpcProvider = function(path, net) {
         console.log("new Client! Total Clients: " + _this.clients.length);
         Events.Info("new Client! Total Clients: " + _this.clients.length);
         client.connected = true;
+        client.connType = "ipc";
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
-            //console.log(data.toString());
             _this._parseResponse(data.toString()).forEach(function(result) {
                 client.rpcHandler.sendResponse(result);
             });
@@ -33186,7 +33265,6 @@ var IpcProvider = function(path, net) {
 };
 
 IpcProvider.prototype._parseResponse = function(data) {
-    //console.log(data);
     var _this = this,
         returnValues = [];
 
@@ -33227,7 +33305,7 @@ IpcProvider.prototype.send = function(payload) {
 
 module.exports = IpcProvider;
 
-},{}],7:[function(require,module,exports){
+},{"./rpcClient":13,"./rpcHandler":14}],9:[function(require,module,exports){
 module.exports=[
     "eth_accounts",
     "eth_coinbase",
@@ -33236,10 +33314,11 @@ module.exports=[
     "personal_listAccounts",
     "personal_newAccount",
     "personal_sendTransaction",
-    "personal_signAndSendTransaction"
+    "personal_signAndSendTransaction",
+    "rpc_modules"
 ]
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports=[
     "web3_clientVersion",
     "web3_sha3",
@@ -33286,7 +33365,7 @@ module.exports=[
     "trace_block"
 ]
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 var parityOutputProcessor = function() {
     this.processMethods = {
@@ -33327,26 +33406,37 @@ parityOutputProcessor.ethGetTransactionReceipt = function(obj) {
 }
 module.exports = parityOutputProcessor;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 var privMethodHandler = function(server) {
     var _this = this;
     this.server = server;
     this.handleMethods = {
-        "eth_accounts": 'ethAccounts',
-        "personal_listAccounts": 'ethAccounts',
-        "eth_coinbase": 'ethCoinbase',
-        "personal_signAndSendTransaction": 'signAndSendTransaction',
-        "personal_newAccount": "personalNewAccount"
-    }
-    _this.ethAccounts('', function() {});
+            "eth_accounts": 'ethAccounts',
+            "personal_listAccounts": 'ethAccounts',
+            "eth_coinbase": 'ethCoinbase',
+            "personal_signAndSendTransaction": 'signAndSendTransaction',
+            "personal_newAccount": "personalNewAccount",
+            "rpc_modules": "rpcModules"
+        }
+        //_this.ethAccounts('', function() {});
 }
 privMethodHandler.accounts = [];
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
 }
+privMethodHandler.prototype.rpcModules = function(params, callback) {
+    callback(privMethodHandler.getCallbackObj(false, '', {
+        "eth": "1.0",
+        "net": "1.0",
+        "parity": "1.0",
+        "rpc": "1.0",
+        "traces": "1.0",
+        "web3": "1.0",
+        "personal": "1.0"
+    }));
+}
 privMethodHandler.prototype.personalNewAccount = function(params, callback) {
-    console.log(params);
     var _this = this;
     try {
         var tempAccount = ethUtil.Wallet.generate();
@@ -33451,8 +33541,9 @@ privMethodHandler.getRandomId = function() {
 privMethodHandler.updataAccounts = false;
 module.exports = privMethodHandler;
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
+var parityOutputProcessor = require('./parityOutputProcessor');
 var rpcClient = function(server) {
     this.server = server;
     this.request = netIO.request.defaults({ jar: true });
@@ -33482,20 +33573,21 @@ rpcClient.prototype.getResponse = function(body, callback) {
 }
 module.exports = rpcClient;
 
-},{}],12:[function(require,module,exports){
+},{"./parityOutputProcessor":11}],14:[function(require,module,exports){
 "use strict";
+var privMethodHandler = require('./privMethodHandler');
 var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
     this.privMethodHandler = new privMethodHandler(server);
 }
 rpcHandler.prototype.sendResponse = function(req) {
+    console.log(req);
     var isArray = false;
     var _this = this;
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
-            //console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
@@ -33541,9 +33633,11 @@ rpcHandler.prototype.sendResponse = function(req) {
 rpcHandler.prototype.write = function(data) {
     //console.log(data);
     var _this = this;
-    if (_this.client.connected)
-        _this.client.write(JSON.stringify(data));
-
+    if (_this.client.connected){
+        console.log(data);
+        if(_this.client.connType=="ipc") _this.client.write(JSON.stringify(data));
+        else if(_this.client.connType=="http") _this.client.json(data);
+    }
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
     Events.Error("{" + methodName + "} Method not found or unavailable");
@@ -33566,11 +33660,11 @@ rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
 module.exports = rpcHandler;
 
-},{"./methods/privMethods.json":7,"./methods/remoteMethods.json":8}],13:[function(require,module,exports){
+},{"./methods/privMethods.json":9,"./methods/remoteMethods.json":10,"./privMethodHandler":12}],15:[function(require,module,exports){
 var angular = require('angular');
 var configs = require('./libs/configs');
 window.configs = configs;
-var ipcProvider = require('./libs/ipcProvider');
+/*var ipcProvider = require('./libs/ipcProvider');
 window.ipcProvider = ipcProvider;
 var rpcClient = require('./libs/rpcClient');
 window.rpcClient = rpcClient;
@@ -33579,10 +33673,12 @@ window.rpcHandler = rpcHandler;
 var privMethodHandler = require('./libs/privMethodHandler');
 window.privMethodHandler = privMethodHandler;
 var parityOutputProcessor = require('./libs/parityOutputProcessor');
-window.parityOutputProcessor = parityOutputProcessor;
+window.parityOutputProcessor = parityOutputProcessor;*/
+var clientHandler = require('./libs/clientHandler');
+window.clientHandler = clientHandler;
 var configCtrl = require('./controllers/configCtrl');
 
 var app = angular.module('mewifyApp', []);
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"./controllers/configCtrl":4,"./libs/configs":5,"./libs/ipcProvider":6,"./libs/parityOutputProcessor":9,"./libs/privMethodHandler":10,"./libs/rpcClient":11,"./libs/rpcHandler":12,"angular":3}]},{},[13]);
+},{"./controllers/configCtrl":4,"./libs/clientHandler":5,"./libs/configs":6,"angular":3}]},{},[15]);

@@ -74,6 +74,11 @@ Events.Info = function(msg) {
 var netIO = {};
 netIO.net = require('net');
 netIO.request = require('request');
+netIO.http = require('http');
+netIO.https = require('https');
+netIO.express = require('express');
+netIO.pem = require('pem');
+netIO.bodyParser = require('body-parser');
 
 var ethUtil = require('ethereumjs-util');
 ethUtil.crypto = require('crypto');

@@ -1,16 +1,17 @@
 "use strict";
+var privMethodHandler = require('./privMethodHandler');
 var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
     this.privMethodHandler = new privMethodHandler(server);
 }
 rpcHandler.prototype.sendResponse = function(req) {
+    console.log(req);
     var isArray = false;
     var _this = this;
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
-            //console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
@@ -56,9 +57,11 @@ rpcHandler.prototype.sendResponse = function(req) {
 rpcHandler.prototype.write = function(data) {
     //console.log(data);
     var _this = this;
-    if (_this.client.connected)
-        _this.client.write(JSON.stringify(data));
-
+    if (_this.client.connected){
+        console.log(data);
+        if(_this.client.connType=="ipc") _this.client.write(JSON.stringify(data));
+        else if(_this.client.connType=="http") _this.client.json(data);
+    }
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
     Events.Error("{" + methodName + "} Method not found or unavailable");

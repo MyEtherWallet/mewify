@@ -3,20 +3,31 @@ var privMethodHandler = function(server) {
     var _this = this;
     this.server = server;
     this.handleMethods = {
-        "eth_accounts": 'ethAccounts',
-        "personal_listAccounts": 'ethAccounts',
-        "eth_coinbase": 'ethCoinbase',
-        "personal_signAndSendTransaction": 'signAndSendTransaction',
-        "personal_newAccount": "personalNewAccount"
-    }
-    _this.ethAccounts('', function() {});
+            "eth_accounts": 'ethAccounts',
+            "personal_listAccounts": 'ethAccounts',
+            "eth_coinbase": 'ethCoinbase',
+            "personal_signAndSendTransaction": 'signAndSendTransaction',
+            "personal_newAccount": "personalNewAccount",
+            "rpc_modules": "rpcModules"
+        }
+        //_this.ethAccounts('', function() {});
 }
 privMethodHandler.accounts = [];
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
 }
+privMethodHandler.prototype.rpcModules = function(params, callback) {
+    callback(privMethodHandler.getCallbackObj(false, '', {
+        "eth": "1.0",
+        "net": "1.0",
+        "parity": "1.0",
+        "rpc": "1.0",
+        "traces": "1.0",
+        "web3": "1.0",
+        "personal": "1.0"
+    }));
+}
 privMethodHandler.prototype.personalNewAccount = function(params, callback) {
-    console.log(params);
     var _this = this;
     try {
         var tempAccount = ethUtil.Wallet.generate();

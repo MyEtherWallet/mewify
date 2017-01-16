@@ -21,7 +21,8 @@
  */
 
 "use strict";
-
+var rpcClient = require('./rpcClient');
+var rpcHandler = require('./rpcHandler');
 var IpcProvider = function(path, net) {
     var _this = this;
     this.responseCallbacks = {};
@@ -32,9 +33,9 @@ var IpcProvider = function(path, net) {
         console.log("new Client! Total Clients: " + _this.clients.length);
         Events.Info("new Client! Total Clients: " + _this.clients.length);
         client.connected = true;
+        client.connType = "ipc";
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
-            //console.log(data.toString());
             _this._parseResponse(data.toString()).forEach(function(result) {
                 client.rpcHandler.sendResponse(result);
             });
@@ -58,7 +59,6 @@ var IpcProvider = function(path, net) {
 };
 
 IpcProvider.prototype._parseResponse = function(data) {
-    //console.log(data);
     var _this = this,
         returnValues = [];
 

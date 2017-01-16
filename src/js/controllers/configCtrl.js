@@ -10,7 +10,7 @@ var configCtrl = function($scope) {
     $scope.showStart = true;
     $scope.showStop = false;
     $scope.disableForm = false;
-    $scope.ipcProvider = null;
+    $scope.clientHandler = null;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
             $scope.showSave = true;
@@ -29,20 +29,19 @@ var configCtrl = function($scope) {
         });
     }
     $scope.start = function() {
-        if (!$scope.ipcProvider) {
-            fileIO.deleteFileSync($scope.clientConfig.ipc[$scope.configs.platform]);
-            $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc[$scope.configs.platform], netIO.net);
+        if (!$scope.clientHandler) {
+            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
             $scope.showStart = false;
             $scope.showStop = true;
             $scope.disableForm = true;
         }
     }
     $scope.stop = function() {
-        if ($scope.ipcProvider) {
-            $scope.ipcProvider.disconnect();
+        if ($scope.clientHandler) {
+            $scope.clientHandler.disconnect();
             $scope.showStart = true;
             $scope.showStop = false;
-            $scope.ipcProvider = null;
+            $scope.clientHandler = null;
             $scope.disableForm = false;
         }
     }

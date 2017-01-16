@@ -1,4 +1,5 @@
 "use strict";
+var parityOutputProcessor = require('./parityOutputProcessor');
 var rpcClient = function(server) {
     this.server = server;
     this.request = netIO.request.defaults({ jar: true });
