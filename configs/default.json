@@ -16,7 +16,6 @@
         "osx": "[[HOME_DIR]]/mewify/conf/",
         "linux": "[[HOME_DIR]]/mewify/conf/"
     },
-    "mewPass": true,
     "mewNodes": [
         {
             "name": "ETH",
@@ -29,5 +28,5 @@
             "chainId": 3
         }
     ],
-    "node": "https://api.myetherapi.com/eth"
+    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1}"
 }

@@ -10,13 +10,12 @@ rpcHandler.prototype.sendResponse = function(req) {
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
+            console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
-                console.log(req[i].method, req[i]);
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
             }
             if (req[i].method && rpcHandler.isPrivMethod(req[i].method)) {
-                console.log(req[i].method, req[i]);
                 var handlePriv = function(treq) {
                     _this.privMethodHandler.handle(treq.method, treq.params, function(data) {
                         if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, treq.id))
@@ -55,6 +54,7 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
+    console.log(data);
     var _this = this;
     if (_this.client.connected)
         _this.client.write(JSON.stringify(data));

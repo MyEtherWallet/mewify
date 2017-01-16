@@ -9,6 +9,7 @@ var configCtrl = function($scope) {
     $scope.showSave = false;
     $scope.showStart = true;
     $scope.showStop = false;
+    $scope.disableForm = false;
     $scope.ipcProvider = null;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
@@ -33,6 +34,7 @@ var configCtrl = function($scope) {
             $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc[$scope.configs.platform], netIO.net);
             $scope.showStart = false;
             $scope.showStop = true;
+            $scope.disableForm = true;
         }
     }
     $scope.stop = function() {
@@ -41,6 +43,7 @@ var configCtrl = function($scope) {
             $scope.showStart = true;
             $scope.showStop = false;
             $scope.ipcProvider = null;
+            $scope.disableForm = false;
         }
     }
 };

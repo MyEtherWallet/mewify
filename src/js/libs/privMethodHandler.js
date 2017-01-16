@@ -7,12 +7,25 @@ var privMethodHandler = function(server) {
         "eth_accounts": 'ethAccounts',
         "personal_listAccounts": 'ethAccounts',
         "eth_coinbase": 'ethCoinbase',
-        "personal_signAndSendTransaction": 'signAndSendTransaction'
+        "personal_signAndSendTransaction": 'signAndSendTransaction',
+        "personal_newAccount": "personalNewAccount"
     }
     _this.ethAccounts('', function() {});
 }
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
+}
+privMethodHandler.prototype.personalNewAccount = function(params, callback) {
+    var _this = this;
+    try {
+        var tempAccount = ethUtil.Wallet.generate();
+        fileIO.writeFile(configs.getKeysPath() + tempAccount.getV3Filename(), tempAccount.toV3String(params[0]), function(data) {
+            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.msg, ''));
+            else callback(privMethodHandler.getCallbackObj(false, '', tempAccount.getAddressString()));
+        });
+    } catch (e) {
+        callback(privMethodHandler.getCallbackObj(true, e.message, ''));
+    }
 }
 privMethodHandler.prototype.ethCoinbase = function(params, callback) {
     var _this = this;
@@ -54,19 +67,18 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
     var _this = this;
     _this.accounts.forEach(function(account) {
         if (account.address == params[0].from) {
-            fileIO.readFile(account.path, function(data) {
-                if (data.error) callback(data);
+            fileIO.readFile(account.path, function(fCont) {
+                if (fCont.error) callback(fCont);
                 else {
-                    try {
-                        var tempWallet = ethUtil.Wallet.fromV3(data.data, params[1], true);
-                        _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
-                            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-                            else {
+                    _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
+                        if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                        else {
+                            try {
                                 params[0].nonce = data.result;
                                 params[0].chainId = configs.getNodeChainId();
                                 console.log(params[0]);
                                 var tx = new ethUtil.Tx(params[0]);
-                                tx.sign(tempWallet.getPrivateKey());
+                                tx.sign(ethUtil.Wallet.fromV3(fCont.data, params[1], true).getPrivateKey());
                                 var rawTx = tx.serialize().toString('hex');
                                 console.log(rawTx);
                                 _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
@@ -74,12 +86,12 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                                     if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
                                     else callback(privMethodHandler.getCallbackObj(false, '', data.result));
                                 });
+                            } catch (err) {
+                                Events.Error(err.message);
+                                callback(privMethodHandler.getCallbackObj(true, err.message, []));
                             }
-                        });
-                    } catch (err) {
-                        Events.Error(err.message);
-                        callback(privMethodHandler.getCallbackObj(true, err.message, []));
-                    }
+                        }
+                    });
                 }
             });
         }

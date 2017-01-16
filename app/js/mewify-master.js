@@ -17,7 +17,6 @@ module.exports={
         "osx": "[[HOME_DIR]]/mewify/conf/",
         "linux": "[[HOME_DIR]]/mewify/conf/"
     },
-    "mewPass": true,
     "mewNodes": [
         {
             "name": "ETH",
@@ -30,7 +29,7 @@ module.exports={
             "chainId": 3
         }
     ],
-    "node": "https://api.myetherapi.com/eth"
+    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1}"
 }
 },{}],2:[function(require,module,exports){
 /**
@@ -33031,6 +33030,7 @@ var configCtrl = function($scope) {
     $scope.showSave = false;
     $scope.showStart = true;
     $scope.showStop = false;
+    $scope.disableForm = false;
     $scope.ipcProvider = null;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
@@ -33055,6 +33055,7 @@ var configCtrl = function($scope) {
             $scope.ipcProvider = new ipcProvider($scope.clientConfig.ipc[$scope.configs.platform], netIO.net);
             $scope.showStart = false;
             $scope.showStop = true;
+            $scope.disableForm = true;
         }
     }
     $scope.stop = function() {
@@ -33063,6 +33064,7 @@ var configCtrl = function($scope) {
             $scope.showStart = true;
             $scope.showStop = false;
             $scope.ipcProvider = null;
+            $scope.disableForm = false;
         }
     }
 };
@@ -33160,6 +33162,7 @@ var IpcProvider = function(path, net) {
         client.connected = true;
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
+            console.log(data.toString());
             _this._parseResponse(data.toString()).forEach(function(result) {
                 client.rpcHandler.sendResponse(result);
             });
@@ -33334,12 +33337,25 @@ var privMethodHandler = function(server) {
         "eth_accounts": 'ethAccounts',
         "personal_listAccounts": 'ethAccounts',
         "eth_coinbase": 'ethCoinbase',
-        "personal_signAndSendTransaction": 'signAndSendTransaction'
+        "personal_signAndSendTransaction": 'signAndSendTransaction',
+        "personal_newAccount": "personalNewAccount"
     }
     _this.ethAccounts('', function() {});
 }
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
+}
+privMethodHandler.prototype.personalNewAccount = function(params, callback) {
+    var _this = this;
+    try {
+        var tempAccount = ethUtil.Wallet.generate();
+        fileIO.writeFile(configs.getKeysPath() + tempAccount.getV3Filename(), tempAccount.toV3String(params[0]), function(data) {
+            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.msg, ''));
+            else callback(privMethodHandler.getCallbackObj(false, '', tempAccount.getAddressString()));
+        });
+    } catch (e) {
+        callback(privMethodHandler.getCallbackObj(true, e.message, ''));
+    }
 }
 privMethodHandler.prototype.ethCoinbase = function(params, callback) {
     var _this = this;
@@ -33381,19 +33397,18 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
     var _this = this;
     _this.accounts.forEach(function(account) {
         if (account.address == params[0].from) {
-            fileIO.readFile(account.path, function(data) {
-                if (data.error) callback(data);
+            fileIO.readFile(account.path, function(fCont) {
+                if (fCont.error) callback(fCont);
                 else {
-                    try {
-                        var tempWallet = ethUtil.Wallet.fromV3(data.data, params[1], true);
-                        _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
-                            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-                            else {
+                    _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
+                        if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                        else {
+                            try {
                                 params[0].nonce = data.result;
                                 params[0].chainId = configs.getNodeChainId();
                                 console.log(params[0]);
                                 var tx = new ethUtil.Tx(params[0]);
-                                tx.sign(tempWallet.getPrivateKey());
+                                tx.sign(ethUtil.Wallet.fromV3(fCont.data, params[1], true).getPrivateKey());
                                 var rawTx = tx.serialize().toString('hex');
                                 console.log(rawTx);
                                 _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
@@ -33401,12 +33416,12 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                                     if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
                                     else callback(privMethodHandler.getCallbackObj(false, '', data.result));
                                 });
+                            } catch (err) {
+                                Events.Error(err.message);
+                                callback(privMethodHandler.getCallbackObj(true, err.message, []));
                             }
-                        });
-                    } catch (err) {
-                        Events.Error(err.message);
-                        callback(privMethodHandler.getCallbackObj(true, err.message, []));
-                    }
+                        }
+                    });
                 }
             });
         }
@@ -33477,13 +33492,12 @@ rpcHandler.prototype.sendResponse = function(req) {
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
+            console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
-                console.log(req[i].method, req[i]);
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
             }
             if (req[i].method && rpcHandler.isPrivMethod(req[i].method)) {
-                console.log(req[i].method, req[i]);
                 var handlePriv = function(treq) {
                     _this.privMethodHandler.handle(treq.method, treq.params, function(data) {
                         if (data.error) _this.write(rpcHandler.getErrorMsg(data.msg, treq.id))
@@ -33522,6 +33536,7 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
+    console.log(data);
     var _this = this;
     if (_this.client.connected)
         _this.client.write(JSON.stringify(data));

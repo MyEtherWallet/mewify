@@ -42,27 +42,21 @@
         <h1> Enter your Information </h1>
         <div class="form-group">
             <label>RPC port:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.httpPort">
+            <input class="form-control" type="text" ng-model="clientConfig.httpPort" ng-disabled="disableForm">
             <label>SSL RPC port:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.httpsPort">
+            <input class="form-control" type="text" ng-model="clientConfig.httpsPort" ng-disabled="disableForm">
         </div>
         <div class="form-group">
             <label>IPC path:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]">
+            <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]" ng-disabled="disableForm">
         </div>
         <div class="form-group">
             <label>Keystore location:</label>
-            <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]">
-        </div>
-        <div class="form-group">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" value="true" ng-model="clientConfig.mewPass">MEW handle pass?</label>
-            </div>
+            <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]" ng-disabled="disableForm">
         </div>
         <div class="form-group">
             <label>MEW Node:</label>
-            <select ng-model="clientConfig.node" class="form-control">
+            <select ng-model="clientConfig.node" class="form-control" ng-disabled="disableForm">
                 <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node}}">{{node.name}}</option>
             </select>
         </div>
