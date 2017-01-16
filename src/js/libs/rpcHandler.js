@@ -10,7 +10,7 @@ rpcHandler.prototype.sendResponse = function(req) {
     if (Array.isArray(req)) {
         isArray = true;
         for (var i in req) {
-            console.log(req[i].method, req[i]);
+            //console.log(req[i].method, req[i]);
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
@@ -54,7 +54,7 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
-    console.log(data);
+    //console.log(data);
     var _this = this;
     if (_this.client.connected)
         _this.client.write(JSON.stringify(data));

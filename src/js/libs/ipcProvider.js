@@ -34,7 +34,7 @@ var IpcProvider = function(path, net) {
         client.connected = true;
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
         client.on('data', function(data) {
-            console.log(data.toString());
+            //console.log(data.toString());
             _this._parseResponse(data.toString()).forEach(function(result) {
                 client.rpcHandler.sendResponse(result);
             });

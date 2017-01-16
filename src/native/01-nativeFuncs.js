@@ -18,6 +18,7 @@ fileIO.readAllFiles = function(dirname, onFileContent, onError) {
             onError(err);
             return;
         }
+        if(!filenames.length) onFileContent('', '', true);
         filenames.forEach(function(filename, id) {
             _this.fs.readFile(dirname + filename, 'utf-8', function(err, content) {
                 if (err) {

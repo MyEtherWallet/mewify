@@ -2,7 +2,6 @@
 var privMethodHandler = function(server) {
     var _this = this;
     this.server = server;
-    this.accounts = [];
     this.handleMethods = {
         "eth_accounts": 'ethAccounts',
         "personal_listAccounts": 'ethAccounts',
@@ -12,16 +11,22 @@ var privMethodHandler = function(server) {
     }
     _this.ethAccounts('', function() {});
 }
+privMethodHandler.accounts = [];
 privMethodHandler.prototype.handle = function(method, params, callback) {
     this[this.handleMethods[method]](params, callback);
 }
 privMethodHandler.prototype.personalNewAccount = function(params, callback) {
+    console.log(params);
     var _this = this;
     try {
         var tempAccount = ethUtil.Wallet.generate();
-        fileIO.writeFile(configs.getKeysPath() + tempAccount.getV3Filename(), tempAccount.toV3String(params[0]), function(data) {
+        var fPath = configs.getKeysPath() + tempAccount.getV3Filename();
+        fileIO.writeFile(fPath, tempAccount.toV3String(params[0]), function(data) {
             if (data.error) callback(privMethodHandler.getCallbackObj(true, data.msg, ''));
-            else callback(privMethodHandler.getCallbackObj(false, '', tempAccount.getAddressString()));
+            else {
+                privMethodHandler.accounts.push({ address: tempAccount.getAddressString(), path: fPath });
+                callback(privMethodHandler.getCallbackObj(false, '', tempAccount.getAddressString()));
+            }
         });
     } catch (e) {
         callback(privMethodHandler.getCallbackObj(true, e.message, ''));
@@ -29,7 +34,7 @@ privMethodHandler.prototype.personalNewAccount = function(params, callback) {
 }
 privMethodHandler.prototype.ethCoinbase = function(params, callback) {
     var _this = this;
-    if (_this.accounts.length) callback(privMethodHandler.getCallbackObj(false, '', _this.accounts[0].address));
+    if (privMethodHandler.accounts.length) callback(privMethodHandler.getCallbackObj(false, '', privMethodHandler.accounts[0].address));
     else {
         this.ethAccounts('', function(data) {
             if (data.error) callback(data);
@@ -40,9 +45,9 @@ privMethodHandler.prototype.ethCoinbase = function(params, callback) {
 }
 privMethodHandler.prototype.ethAccounts = function(params, callback) {
     var _this = this;
-    if (_this.accounts.length) {
+    if (privMethodHandler.accounts.length) {
         var output = [];
-        _this.accounts.forEach(function(account) {
+        privMethodHandler.accounts.forEach(function(account) {
             output.push(account.address);
         });
         callback(privMethodHandler.getCallbackObj(false, '', output));
@@ -53,8 +58,8 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
                 tempAccounts.push({ address: privMethodHandler.sanitizeAddress(JSON.parse(cont).address), path: fname });
             }
             if (isLast) {
-                _this.accounts = tempAccounts;
-                if (_this.accounts.length) _this.ethAccounts(params, callback);
+                privMethodHandler.accounts = tempAccounts;
+                if (privMethodHandler.accounts.length) _this.ethAccounts(params, callback);
                 else callback(privMethodHandler.getCallbackObj(false, '', []));
             }
         }, function(err) {
@@ -65,7 +70,7 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
 }
 privMethodHandler.prototype.signAndSendTransaction = function(params, callback) {
     var _this = this;
-    _this.accounts.forEach(function(account) {
+    privMethodHandler.accounts.forEach(function(account) {
         if (account.address == params[0].from) {
             fileIO.readFile(account.path, function(fCont) {
                 if (fCont.error) callback(fCont);
@@ -76,13 +81,10 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                             try {
                                 params[0].nonce = data.result;
                                 params[0].chainId = configs.getNodeChainId();
-                                console.log(params[0]);
                                 var tx = new ethUtil.Tx(params[0]);
                                 tx.sign(ethUtil.Wallet.fromV3(fCont.data, params[1], true).getPrivateKey());
                                 var rawTx = tx.serialize().toString('hex');
-                                console.log(rawTx);
                                 _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
-                                    console.log(data);
                                     if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
                                     else callback(privMethodHandler.getCallbackObj(false, '', data.result));
                                 });
@@ -116,4 +118,5 @@ privMethodHandler.isJSON = function(json) {
 privMethodHandler.getRandomId = function() {
     return ethUtil.crypto.randomBytes(16).toString('hex');
 }
+privMethodHandler.updataAccounts = false;
 module.exports = privMethodHandler;
