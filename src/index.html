@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+xz<!DOCTYPE html>
 <html lang="en" ng-app="mewifyApp">
 
 <head>
@@ -89,13 +89,12 @@
                 The node you are sending through is provided by <strong>MyEtherWallet</strong>.
             </p>
             <div class="text-center">
-                <h4 class="text-danger ">Are you sure you want to do this? </h4>
                 <div class="form-group">
-                    <label>decrypt password: </label>
+                    <h4 class="text-danger ">Enter your password to confirm transaction:</h4>
                     <input class="form-control" type="password" ng-model="tx.pass">
                 </div>
-                <button class="btn btn-default" ng-click="tx.deny()">No, get me out of here</button>
-                <button class="btn btn-primary" ng-click="tx.approve()">Yes, send transaction</button>
+                <button class="btn btn-default" ng-click="tx.deny()">Do NOT Send Transaction</button>
+                <button class="btn btn-primary" ng-click="tx.approve()">Send Transaction</button>
             </div>
         </article>
     </div>
