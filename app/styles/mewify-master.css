@@ -3894,91 +3894,7 @@ html {
       -ms-flex-direction: column;
           flex-direction: column;
 }
-.home header {
-  background: #31033a;
-  background: linear-gradient(149deg, #31033a, #630A4a, #7d1f31);
-  color: white;
-  padding: 0;
-}
-@media screen and (max-width: 900px) {
-  .home header {
-    text-align: center;
-  }
-}
-.home header .container {
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
-}
-@media screen and (max-width: 900px) {
-  .home header .container {
-    -webkit-flex-direction: column;
-        -ms-flex-direction: column;
-            flex-direction: column;
-  }
-}
-@media screen and (min-width: 901px) {
-  .home header .brand {
-    -webkit-flex-basis: 245px;
-        -ms-flex-preferred-size: 245px;
-            flex-basis: 245px;
-  }
-}
-.home header .brand img {
-  max-width: 1000px;
-  padding: 5px 0;
-}
-.home header .tagline {
-  font-size: 18px;
-  font-weight: 200;
-  color: white;
-  -webkit-flex: 1 auto;
-      -ms-flex: 1 auto;
-          flex: 1 auto;
-  text-align: right;
-  padding: 0 0 5px;
-}
-@media screen and (max-width: 900px) {
-  .home header .tagline {
-    text-align: center;
-  }
-}
-.home header .tagline > * {
-  display: inline;
-  vertical-align: middle;
-}
-.home header a {
-  color: white;
-  cursor: pointer;
-  font-weight: 400;
-  transition: 250ms all ease;
-}
-.home header a:hover,
-.home header a:active,
-.home header a:focus {
-  opacity: .8;
-  color: white;
-  text-decoration: none;
-  transition: 250ms all ease;
-}
-.home header .dropdown {
-  padding: 0;
-  text-align: right;
-}
-.home header .dropdown .dropdown-menu {
-  right: -10px;
-  min-width: auto;
-  left: auto;
-}
-.home header .dropdown .dropdown-menu > li > a {
-  font-size: 15px;
-  padding: 5px 30px 5px 15px;
-  position: relative;
-}
-.home article {
+.home .flex-wrap {
   background-color: white;
   -webkit-flex: 1;
       -ms-flex: 1;
@@ -4404,16 +4320,18 @@ label small {
   height: auto;
   max-width: 100%;
 }
-.header-branding {
+.header {
   color: white;
   padding: 0;
+  background: #31033a;
+  background: linear-gradient(149deg, #31033a, #630A4a, #7d1f31);
 }
 @media screen and (max-width: 900px) {
-  .header-branding {
+  .header {
     text-align: center;
   }
 }
-.header-branding .container {
+.header .container {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -4422,24 +4340,24 @@ label small {
           align-items: center;
 }
 @media screen and (max-width: 900px) {
-  .header-branding .container {
+  .header .container {
     -webkit-flex-direction: column;
         -ms-flex-direction: column;
             flex-direction: column;
   }
 }
 @media screen and (min-width: 901px) {
-  .header-branding .brand {
+  .header .brand {
     -webkit-flex-basis: 245px;
         -ms-flex-preferred-size: 245px;
             flex-basis: 245px;
   }
 }
-.header-branding .brand img {
+.header .brand img {
   max-width: 1000px;
   padding: 5px 0;
 }
-.header-branding .tagline {
+.header .tagline {
   font-size: 18px;
   font-weight: 200;
   color: white;
@@ -4450,38 +4368,38 @@ label small {
   padding: 0 0 5px;
 }
 @media screen and (max-width: 900px) {
-  .header-branding .tagline {
+  .header .tagline {
     text-align: center;
   }
 }
-.header-branding .tagline > * {
+.header .tagline > * {
   display: inline;
   vertical-align: middle;
 }
-.header-branding a {
+.header a {
   color: white;
   cursor: pointer;
   font-weight: 400;
   transition: 250ms all ease;
 }
-.header-branding a:hover,
-.header-branding a:active,
-.header-branding a:focus {
+.header a:hover,
+.header a:active,
+.header a:focus {
   opacity: .8;
   color: white;
   text-decoration: none;
   transition: 250ms all ease;
 }
-.header-branding .dropdown {
+.header .dropdown {
   padding: 0;
   text-align: right;
 }
-.header-branding .dropdown .dropdown-menu {
+.header .dropdown .dropdown-menu {
   right: -10px;
   min-width: auto;
   left: auto;
 }
-.header-branding .dropdown .dropdown-menu > li > a {
+.header .dropdown .dropdown-menu > li > a {
   font-size: 15px;
   padding: 5px 30px 5px 15px;
   position: relative;
