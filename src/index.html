@@ -27,6 +27,9 @@ xz<!DOCTYPE html>
         </section>
     </header>
     <div class="flex-wrap" ng-controller='configCtrl'>
+
+
+
         <article class="container" ng-show="showInitDiv">
             <h1> Enter your Information </h1>
             <div class="form-group">
@@ -57,6 +60,9 @@ xz<!DOCTYPE html>
                 <a class="btn btn-danger btn-block" ng-click="stop()" ng-show="showStop"> STOP </a>
             </div>
         </article>
+
+
+
         <article class="container confirmation-dialog" ng-show="showConfirmTxDiv">
             <h1 class="text-danger text-center">Warning!</h1>
             <table class="table text-center">
@@ -97,6 +103,29 @@ xz<!DOCTYPE html>
                 <button class="btn btn-primary" ng-click="tx.approve()">Send Transaction</button>
             </div>
         </article>
+
+
+        <article class="container confirmation-dialog" ng-show="showConfirmTxDiv">
+          <h1 class="text-success text-center">Your transaction was successful!</h1>
+            <table class="table text-center">
+                <tbody>
+                    <tr>
+                        <td>
+                          <div id="addressIdenticon" class="med" title="Address Indenticon" blockie-address="{{tx.from}}" watch-var="tx.from"></div>
+                        </td>
+                        <td class="mono"> ->
+                            <br /> {{tx.value}} ETH </td>
+                        <td>
+                          <div id="addressIdenticon" class="med" title="Address Indenticon" blockie-address="{{tx.to}}" watch-var="tx.to"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="text-center mono wrap">TX ID: <a href="etherscan.io/tx/">0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A87cB57B5A97eAbe94205C07890BE4c1aD31E486A8</a></p>
+        </article>
+
+
+
     </div>
     <footer>
         <div class="container">
