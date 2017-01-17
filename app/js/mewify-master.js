@@ -4,17 +4,17 @@ module.exports={
     "httpsPort": 8546,
     "ipc": {
         "win32": "\\.\\pipe\\geth.ipc",
-        "osx": "[[HOME_DIR]]/Library/Ethereum/geth.ipc",
+        "darwin": "[[HOME_DIR]]/Library/Ethereum/geth.ipc",
         "linux": "[[HOME_DIR]]/.ethereum/geth.ipc"
     },
     "keystore": {
         "win32": "[[HOME_DIR]]/mewify/keys/",
-        "osx": "[[HOME_DIR]]/mewify/keys/",
+        "darwin": "[[HOME_DIR]]/mewify/keys/",
         "linux": "[[HOME_DIR]]/mewify/keys/"
     },
     "configDir": {
         "win32": "[[HOME_DIR]]/mewify/conf/",
-        "osx": "[[HOME_DIR]]/mewify/conf/",
+        "darwin": "[[HOME_DIR]]/mewify/conf/",
         "linux": "[[HOME_DIR]]/mewify/conf/"
     },
     "mewNodes": [
@@ -33204,28 +33204,6 @@ httpProvider.prototype.disconnect = function() {
 module.exports = httpProvider;
 
 },{"./rpcClient":13,"./rpcHandler":14}],8:[function(require,module,exports){
-/*
-    This file is part of web3.js.
-
-    web3.js is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    web3.js is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with web3.js.  If not, see <http://www.gnu.org/licenses/>.
-*/
-/** @file ipcprovider.js
- * @authors:
- *   Fabian Vogelsteller <fabian@ethdev.com>
- * @date 2015
- */
-
 "use strict";
 var rpcClient = require('./rpcClient');
 var rpcHandler = require('./rpcHandler');
