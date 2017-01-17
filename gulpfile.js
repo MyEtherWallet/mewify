@@ -1,4 +1,6 @@
 /* Global */
+var fs           = require('fs')
+
 var autoprefixer = require('gulp-autoprefixer');
 var cssnano = require('gulp-cssnano');
 var gulp = require('gulp');
@@ -13,14 +15,18 @@ var browserify = require('browserify')
 var source = require('vinyl-source-stream')
 var buffer = require('vinyl-buffer')
 
+var src          = './src/'
+var dst          = './app/'
+
 /* Errors */
 function onError(error) {
     console.log(error);
     notify.onError({
-        title: "Gulp",
+        title:    "Gulp",
         subtitle: "Failure!",
-        message: "Error: <%= error.message %>",
-        sound: "Beep"
+        message:  "Error: <%= error.message %>",
+        icon:     src + "images/icon.png",
+        sound:    "Beep"
     })(error);
     this.emit('end');
 }
@@ -28,58 +34,60 @@ function onError(error) {
 function onSuccess(msg) {
     return {
         message: msg + " Complete! ",
+        icon:    src + "images/icon.png",
         onLast: true
     }
 }
 
-/* Compile Less */
-gulp.task('less', function() {
-    return gulp.src('./src/less/mewify-master.less')
-        .pipe(plumber({ errorHandler: onError }))
-        .pipe(sourcemaps.init())
-        .pipe(less('compress: false'))
-        .pipe(autoprefixer({
-            browsers: ['last 3 versions', 'iOS > 7'],
-            remove: false
-        }))
-        .pipe(rename('mewify-master.css'))
-        .pipe(gulp.dest('./app/css'))
-        .pipe(cssnano({
-            autoprefixer: false,
-            safe: true
-        }))
-        .pipe(rename('mewify-master.min.css'))
-        .pipe(sourcemaps.write('./maps/'))
-        .pipe(gulp.dest('./app/css'))
-        .pipe(notify('Less Compiled, Prefixed, & Minified'));
+// styles: Compile and Minify Less / CSS Files
+var styles_watchFolder = src  + 'styles/**/*.less'
+var styles_srcFile     = src  + 'styles/mewify-master.less'
+var styles_destFolder  = dst  + 'css'
+var styles_destFile    =        'mewify-master.css'
+var styles_destFileMin =        'mewify-master.min.css'
+
+gulp.task( 'styles', function () {
+ return gulp.src( styles_srcFile )
+     .pipe( plumber          ({ errorHandler: onError                                   }))
+     .pipe( sourcemaps.init  (                                                           ))
+     .pipe( less             ({ compress: false                                         }))
+     .pipe( autoprefixer     ({ browsers: ['last 2 versions', 'iOS > 8'], remove: false }))
+     .pipe( rename           (  styles_destFile                                          ))
+     .pipe( gulp.dest        (  styles_destFolder                                        ))
+     .pipe( cssnano          ({ autoprefixer: false, safe: true                         }))
+     .pipe( rename           (  styles_destFileMin                                       ))
+     .pipe( sourcemaps.write (  '/maps'                                                  ))
+     .pipe( gulp.dest        (  styles_destFolder                                        ))
+     .pipe( notify           (  onSuccess('Styles')                                      ))
+})
+
+/* Concat & Uglify JS */
+var nativejs_watchFolder   = src  + 'js-native/**/*.js'
+var nativejs_destFolder    = dst  + 'js'
+var nativejs_destFile      =        'mewify-native.js'
+var nativejs_destFileMin   =        'mewify-native.min.js'
+
+gulp.task('nativejs', function() {
+  return gulp.src( js_watchFolder )
+    .pipe( plumber          ({ errorHandler: onError }))
+    .pipe( sourcemaps.init  (                         ))
+    .pipe( gulpConcat       (  nativejs_destFile      ))
+    .pipe( gulp.dest        (  nativejs_destFolder    ))
+    .pipe( uglify           (                         ))
+    .pipe( rename           (  nativejs_destFileMin   ))
+    .pipe( sourcemaps.write (  '/maps'                ))
+    .pipe( gulp.dest        (  nativejs_destFolder    ))
+    .pipe( notify           (  onSuccess('JS' )       ))
 });
 
-// js: concat native
-var js_nativeSrcFiles = './src/native/*.js'
-var js_nativeDestFolder = './app/js/'
-var js_nativeDestFile = 'mewify-native.js'
-var js_nativeDestFileMin = 'mewify-native.min.js'
-
-/* Concat & Uglify Native JS */
-gulp.task('nativeJS', function() {
-    return gulp.src(js_nativeSrcFiles)
-        .pipe(plumber({ errorHandler: onError }))
-        .pipe(sourcemaps.init())
-        .pipe(gulpConcat(js_nativeDestFile))
-        .pipe(gulp.dest(js_nativeDestFolder))
-        .pipe(uglify())
-        .pipe(rename(js_nativeDestFileMin))
-        .pipe(sourcemaps.write('./maps/'))
-        .pipe(gulp.dest(js_nativeDestFolder))
-        .pipe(notify(onSuccess('JS Native Files Concatonated')))
-});
 
 // js: Browserify
-var js_srcFile = './src/js/main.js'
-var js_destFolder = './app/js/'
-var js_destFile = 'mewify-master.js'
-var js_destFileMin = 'mewify-master.min.js'
-var babelOpts = {
+var js_watchFolder = src  + 'js/**/*.js'
+var js_srcFile     = src  + 'js/main.js'
+var js_destFolder  = dst  + 'js/'
+var js_destFile    =        'mewify-master.js'
+var js_destFileMin =        'mewify-master.min.js'
+var babelOpts      = {
     presets: ['es2015'],
     compact: false,
     global: true
@@ -104,16 +112,34 @@ gulp.task('js', function() {
     bundle_js(bundler)
 })
 
-/* Watch Folders */
-var less_WatchFolder = './src/less/**/*.less';
-var js_watchFolder = './src/js/**/*.js'
-var js_nativeWatchFolder = './src/native/*.js'
 
-gulp.task('watch', function() {
-    gulp.watch(less_WatchFolder, ['less']);
-    gulp.watch(js_watchFolder, ['js']);
-    gulp.watch(js_nativeWatchFolder, ['nativeJS']);
-});
+// Copy
+var imgSrcFolder  = src + 'images/**/*'
+var fontSrcFolder = src + 'fonts/**/*'
+var htmlFiles     = src + 'index.html'
+gulp.task('copy', function() {
+ gulp.src ( imgSrcFolder )
+     .pipe( gulp.dest( dst + 'images' ))
+ gulp.src ( fontSrcFolder )
+     .pipe( gulp.dest( dst + 'fonts' ))
+ gulp.src ( htmlFiles )
+     .pipe( gulp.dest( dst ))
+ .pipe( notify ( onSuccess(' Copy ' )))
+})
 
-gulp.task('default', ['less', 'js', 'nativeJS', 'watch']);
-gulp.task('build', ['less', 'js', 'nativeJS']);
+
+
+
+// Watch Tasks
+gulp.task('watchJS',       function() { gulp.watch( js_watchFolder,       ['js'      ]) })
+gulp.task('watchNativeJS', function() { gulp.watch( nativejs_watchFolder, ['nativejs']) })
+gulp.task('watchLess',     function() { gulp.watch( styles_watchFolder,   ['styles'  ]) })
+gulp.task('watchHTML',     function() { gulp.watch( htmlFiles,            ['copy'    ]) })
+gulp.task('watchImages',   function() { gulp.watch( imgSrcFolder,         ['copy'    ]) })
+gulp.task('watchFonts',    function() { gulp.watch( fontSrcFolder,        ['copy'    ]) })
+
+gulp.task('watch',         ['watchJS','watchNativeJS','watchLess','watchHTML','watchImages','watchFonts'])
+
+gulp.task('build',         ['styles','nativejs','js','copy'])
+
+gulp.task('default',       ['build', 'watch'])

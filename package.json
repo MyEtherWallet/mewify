@@ -1,17 +1,24 @@
 {
   "name": "mewify",
-  "version": "1.0.0",
-  "description": "Proxy between MEW servers and local computer to allow instant ethereum based apps (Mist) communication",
+  "version": "0.0.1",
+  "description": "No more syncing the chain.",
+  "keywords": [ "MyEtherWallet", "mewify", "Ethereum" ],
   "main": "app/index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nw .",
     "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
   },
   "window": {
-    "width": 500,
-    "height": 550,
-    "resizable": false
+    "title": "Mewify: A Project by MyEtherWallet",
+    "icon": "src/images/icon.png",
+    "width": 492,
+    "height": 700,
+    "min_width": 250,
+    "min_height": 400,
+    "max_width": 4000,
+    "max_height": 4000,
+    "position": "mouse",
+    "resizable": true
   },
   "repository": {
     "type": "git",
