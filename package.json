@@ -25,6 +25,7 @@
   "homepage": "https://github.com/MyEtherWallet/mewify#readme",
   "dependencies": {
     "angular": "^1.6.1",
+    "babelify": "^7.3.0",
     "body-parser": "^1.15.2",
     "browserify": "^13.3.0",
     "crypto": "0.0.3",
