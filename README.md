@@ -4,10 +4,10 @@
 
 
 ## Warnings
-- **This project is in ALPHA. Use at your own risk. Do not expect it to work.**
-- This is a brand-spanking-new project. Please do not place any keys with larges amounts into your new mewify keystore folder.
-- This has not been tested on Windows. Feel free to give it a go, but it may not work.
-- Please only use this if you are able
+- **This is a brand-spanking-new project and is currently in ALPHA. Use at your own risk. Do not expect it to work.**
+- Please do not place any keys with larges amounts into your new mewify keystore folder. We have been developing securely, but have not had an audit, nor explored all possible exploits.
+- This has not been tested on Windows yet. Feel free to give it a go, but it may not work.
+- Please only use this if you comfortable with command line and debugging (and informing us about what you debugged.)
 
 ##If you have a problem
 - Please open a github issue.
@@ -17,44 +17,43 @@
     - your OS
     - OS version
     - What you are trying to connect to (mist, ethereum wallet, other?)
-    - Red messages in (right click anywhere in Mewify and click "Inspect")
-    - Warnings in terminal
-    - Warnings that are displayed via terminal-notifier.
+    - Red errors in the console (right click anywhere in Mewify and click "Inspect")
+    - Warnings in displayed in your command line
+    - Warnings that are displayed via notifications.
     - What you were doing and/or trying to do when this happened. e.g...
         - I opened the app up and it died 😞.
-        - I tried to send a transaction and it hung.
+        - I tried to send a transaction and it died.
         - I successfully sent a transaction but now my computer turned into a dragon and attacked me. Here is the TX ID as a link to etherscan.io because even though I'm being attacked by a rabid computer-dragon, I still understand how much easier it makes your life when I give you links.
-- We will be better at providing full support users we squash all these pesky bugs. Until then, don't piss off tayvano and put everything in --->>> ** GITHUB ISSUES, PLEEEEEASE! ** <<<-----
+- We will be better at providing full support users we squash all these pesky bugs. Until then, file everything as a **GITHUB ISSUE, PLEEEEEASE!**
 
 
 ## Getting up and running
 - Install Node (w/ npm)
-- We are running Node v7.4. It should work with older version but if you are getting errors, try updating node first.
-- You can update also update node via npm:
-    - `sudo npm cache clean -f`
-    - `sudo npm install -g n`
-    - `sudo n stable`
-    - `sudo npm update -g`
-- If you need specific versions of node for different projects, get `nvm`. Seriously. Then it's as simple as `nvm install 7.4` & `nvm use 7.4`
+    - We are running Node v7.4. It should work with older version but if you are getting errors, try updating node first.
+        - If you need specific versions of node for different projects, get `nvm`. Seriously. Then it's as simple as `nvm install 7.4` & `nvm use 7.4`
+        - You can update update node via npm:
+            - `sudo npm cache clean -f`
+            - `sudo npm install -g n`
+            - `sudo n stable`
+            - `sudo npm update -g`
 - Install nw.js globally:
-    - `sudo npm install nw --nwjs_build_type=sdk -g`
-    - *TODO: see if we can do this automagically? I don't think so because global?*
+    - `sudo npm install nw --nwjs_build_type=sdk -g` *TODO: see if we can do this automagically? I don't think so because global?*
 - Clone / download the Mewify repo
 - `cd path/to/folder`
-- run `npm install`
-- run `gulp`
-- run `npm start`
-- Mewify should automatically open up.
-- Mewify should **NOT** have empty fields & 3 buttons showing. If it does, it's not working properly.
+- `npm install`
+- `gulp`
+- `npm start`
+- The Mewify applet should automatically open up.
+- Mewify should have filled-in fields 1 button showing. If it has empty fields / 3 buttons, it's not working properly. Make sure gulp is running?
 - Click the "Start" button
 
 ## Interacting with Dapps in Ethereum Wallet / Mist
 - Get it up and running (see above)
 - Open Mist or Ethereum Wallet
 - Your chain should be fully synced after a couple seconds.
-- Create a new account. Your chain should be already fully synced.
+- Create a new account or copy and paste a test wallet into the keystore folder. You can change the keystore folder in the Mewify app.
 - In order to use your existing keys, copy and paste them to the key folder that is shown under "Keystore Location" in Mewify. They should now show up in Mist/EW.
-- **Note: Please don't move keys into this folder or change to use your default keystore folder further testing has been done.**
+- **Note: Please don't move big keys into this folder, or change to use your default keystore folder further testing has been done.**
 
 
 ## Interacting with Dapps in Chrome (? does this work ?)
