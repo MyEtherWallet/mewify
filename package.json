@@ -2,7 +2,12 @@
   "name": "mewify",
   "version": "0.0.1",
   "description": "No more syncing the chain.",
-  "keywords": [ "MyEtherWallet", "mewify", "Ethereum", "mew" ],
+  "keywords": [
+    "MyEtherWallet",
+    "mewify",
+    "Ethereum",
+    "mew"
+  ],
   "main": "app/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -33,6 +38,8 @@
   "homepage": "https://github.com/MyEtherWallet/mewify#readme",
   "dependencies": {
     "angular": "^1.6.1",
+    "bignumber.js": "^4.0.0",
+    "blockies": "0.0.2",
     "body-parser": "^1.15.2",
     "browserify": "^13.3.0",
     "crypto": "0.0.3",

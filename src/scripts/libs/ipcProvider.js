@@ -7,9 +7,19 @@ var IpcProvider = function(path, net) {
     this.path = path;
     this.clients = [];
     this.rpcClient = new rpcClient(configs.getNodeUrl());
+    this.openSockets = {};
+    var nextSocketId = 0;
+    var onConnection = function(socket) {
+        var socketId = nextSocketId;
+        console.log('ipc connection', socketId, 'opened');
+        _this.openSockets[socketId] = socket;
+        nextSocketId++;
+        socket.on('close', function() {
+            console.log('ipc connection', socketId, 'closed');
+            delete _this.openSockets[socketId];
+        });
+    }
     this.server = net.createServer(function(client) {
-        console.log("new Client! Total Clients: " + _this.clients.length);
-        Events.Info("new Client! Total Clients: " + _this.clients.length);
         client.connected = true;
         client.connType = "ipc";
         client.rpcHandler = new rpcHandler(client, _this.rpcClient);
@@ -18,14 +28,6 @@ var IpcProvider = function(path, net) {
                 client.rpcHandler.sendResponse(result);
             });
         });
-        client.on('end', function() {
-            client.connected = false;
-            _this.clients.splice(_this.clients.indexOf(client), 1);
-        });
-        _this.clients.push(client);
-    });
-    this.server.on('listening', function() {
-        console.log('Connection started');
     });
     this.server.on('close', function(e) {
         console.log('Connection closed');
@@ -33,7 +35,10 @@ var IpcProvider = function(path, net) {
     this.server.on('error', function(e) {
         console.error('IPC Connection Error', e);
     });
-    this.server.listen({ path: this.path });
+    this.server.listen({ path: this.path }, function() {
+        console.log("ipc server started");
+    });
+    this.server.on('connection', onConnection);
 };
 
 IpcProvider.prototype._parseResponse = function(data) {
@@ -63,16 +68,16 @@ IpcProvider.prototype._parseResponse = function(data) {
     return returnValues;
 };
 
-IpcProvider.prototype.isConnected = function() {
-    return this.server.listening;
-};
-
 IpcProvider.prototype.disconnect = function() {
-    this.server.close();
-};
+    this.server.close(function() {
+        console.log("ipc server closed");
+    });
+    for (var socketId in this.openSockets) {
+        console.log('ipc connection', socketId, 'destroyed');
+        this.openSockets[socketId].destroy();
+        delete this.openSockets[socketId];
 
-IpcProvider.prototype.send = function(payload) {
-    this.connection.write(JSON.stringify(payload));
+    }
 };
 
 module.exports = IpcProvider;

@@ -3,14 +3,16 @@ var privMethodHandler = function(server) {
     var _this = this;
     this.server = server;
     this.handleMethods = {
-            "eth_accounts": 'ethAccounts',
-            "personal_listAccounts": 'ethAccounts',
-            "eth_coinbase": 'ethCoinbase',
-            "personal_signAndSendTransaction": 'signAndSendTransaction',
-            "personal_newAccount": "personalNewAccount",
-            "rpc_modules": "rpcModules"
-        }
-        //_this.ethAccounts('', function() {});
+        "eth_accounts": 'ethAccounts',
+        "personal_listAccounts": 'ethAccounts',
+        "eth_coinbase": 'ethCoinbase',
+        "personal_signAndSendTransaction": 'signAndSendTransaction',
+        "personal_sendTransaction": 'signAndSendTransaction',
+        "eth_sendTransaction":'signAndSendTransaction',
+        "personal_newAccount": "personalNewAccount",
+        "rpc_modules": "rpcModules"
+    }
+    _this.ethAccounts('', function() {});
 }
 privMethodHandler.accounts = [];
 privMethodHandler.prototype.handle = function(method, params, callback) {
@@ -79,36 +81,51 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
         });
     }
 }
+var decryptWalletAndSign = function(cont, tx, pass, server, callback) {
+    try {
+        tx.sign(ethUtil.Wallet.fromV3(cont, pass, true).getPrivateKey());
+        var rawTx = tx.serialize().toString('hex');
+        server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
+            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+            else callback(privMethodHandler.getCallbackObj(false, '', data.result));
+        });
+    } catch (err) {
+        Events.Error(err.message);
+        callback(privMethodHandler.getCallbackObj(true, err.message, []));
+    }
+}
 privMethodHandler.prototype.signAndSendTransaction = function(params, callback) {
     var _this = this;
+    if(!params[1]) params[1] = ''; 
+    var accountFound = false;
     privMethodHandler.accounts.forEach(function(account) {
-        if (account.address == params[0].from) {
+        if (accountFound) return;
+        if (account.address == params[0].from.toLowerCase()) {
+            accountFound = true;
             fileIO.readFile(account.path, function(fCont) {
                 if (fCont.error) callback(fCont);
                 else {
                     _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_getTransactionCount", "params": [params[0].from, 'latest'], "id": privMethodHandler.getRandomId() }, function(data) {
                         if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
                         else {
-                            try {
-                                params[0].nonce = data.result;
-                                params[0].chainId = configs.getNodeChainId();
-                                var tx = new ethUtil.Tx(params[0]);
-                                tx.sign(ethUtil.Wallet.fromV3(fCont.data, params[1], true).getPrivateKey());
-                                var rawTx = tx.serialize().toString('hex');
-                                _this.server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
-                                    if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-                                    else callback(privMethodHandler.getCallbackObj(false, '', data.result));
-                                });
-                            } catch (err) {
-                                Events.Error(err.message);
-                                callback(privMethodHandler.getCallbackObj(true, err.message, []));
-                            }
+                            params[0].nonce = data.result;
+                            params[0].chainId = configs.getNodeChainId();
+                            var tx = new ethUtil.Tx(params[0]);
+                            var tempTx = { to: params[0].to, from: params[0].from, value: etherUnits.toEther(params[0].value, 'wei'), pass: params[1] };
+                            angularApprovalHandler.showTxConfirm(tempTx, function(data) {
+                                if (data.error) callback(data);
+                                else {
+                                    decryptWalletAndSign(fCont.data, tx, tempTx.pass, _this.server, callback);
+                                }
+                            });
                         }
                     });
                 }
             });
         }
+        //break;
     });
+    if (!accountFound) callback(privMethodHandler.getCallbackObj(true, 'Account not found', ''));
 
 }
 privMethodHandler.getCallbackObj = function(isError, msg, data) {
@@ -116,7 +133,7 @@ privMethodHandler.getCallbackObj = function(isError, msg, data) {
 }
 privMethodHandler.sanitizeAddress = function(address) {
     address = address.substring(0, 2) == '0x' ? address.substring(2) : address;
-    return '0x' + address;
+    return '0x' + address.toLowerCase();
 }
 privMethodHandler.isJSON = function(json) {
     try {
@@ -129,5 +146,4 @@ privMethodHandler.isJSON = function(json) {
 privMethodHandler.getRandomId = function() {
     return ethUtil.crypto.randomBytes(16).toString('hex');
 }
-privMethodHandler.updataAccounts = false;
 module.exports = privMethodHandler;

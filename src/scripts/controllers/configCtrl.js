@@ -6,10 +6,8 @@ var configCtrl = function($scope) {
         $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
         if (!$scope.$$phase) $scope.$apply();
     });
-    $scope.showSave = false;
-    $scope.showStart = true;
-    $scope.showStop = false;
-    $scope.disableForm = false;
+    $scope.showSave = $scope.showConfirmTxDiv = $scope.showStop = $scope.disableForm = false;
+    $scope.showInitDiv = $scope.showStart = true;
     $scope.clientHandler = null;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
@@ -34,6 +32,7 @@ var configCtrl = function($scope) {
             $scope.showStart = false;
             $scope.showStop = true;
             $scope.disableForm = true;
+            angularApprovalHandler.setScope($scope);
         }
     }
     $scope.stop = function() {
@@ -43,6 +42,7 @@ var configCtrl = function($scope) {
             $scope.showStop = false;
             $scope.clientHandler = null;
             $scope.disableForm = false;
+            angularApprovalHandler.removeScope();
         }
     }
 };

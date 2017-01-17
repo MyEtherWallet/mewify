@@ -1,4 +1,8 @@
 const os = require('os');
+var nwGui = require('nw.gui');
+nwGui.setAlwaysOnTop = function(isOnTop) {
+    nwGui.Window.get().setAlwaysOnTop(isOnTop);;
+}
 var fileIO = {};
 fileIO.fs = require('fs');
 fileIO.mkdirp = require('mkdirp');

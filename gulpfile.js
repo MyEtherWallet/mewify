@@ -111,7 +111,7 @@ gulp.task('js', function() {
 // Copy
 var imgSrcFolder  = src + 'images/**/*'
 var fontSrcFolder = src + 'fonts/**/*'
-var htmlFiles     = src + 'index.html'
+var htmlFiles     = src + '*.html'
 gulp.task('copy', function() {
  gulp.src ( imgSrcFolder  ).pipe( gulp.dest( app + 'images'    ))
  gulp.src ( fontSrcFolder ).pipe( gulp.dest( app + 'fonts'     ))

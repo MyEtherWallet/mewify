@@ -6,7 +6,6 @@ var rpcHandler = function(client, server) {
     this.privMethodHandler = new privMethodHandler(server);
 }
 rpcHandler.prototype.sendResponse = function(req) {
-    console.log(req);
     var isArray = false;
     var _this = this;
     if (Array.isArray(req)) {
@@ -55,12 +54,10 @@ rpcHandler.prototype.sendResponse = function(req) {
     }
 }
 rpcHandler.prototype.write = function(data) {
-    //console.log(data);
     var _this = this;
-    if (_this.client.connected){
-        console.log(data);
-        if(_this.client.connType=="ipc") _this.client.write(JSON.stringify(data));
-        else if(_this.client.connType=="http") _this.client.json(data);
+    if (_this.client.connected) {
+        if (_this.client.connType == "ipc") _this.client.write(JSON.stringify(data));
+        else if (_this.client.connType == "http") _this.client.json(data);
     }
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
