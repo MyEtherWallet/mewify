@@ -33639,24 +33639,25 @@ rpcHandler.privMethods = require('./methods/privMethods.json');
 module.exports = rpcHandler;
 
 },{"./methods/privMethods.json":9,"./methods/remoteMethods.json":10,"./privMethodHandler":12}],15:[function(require,module,exports){
-var angular = require('angular');
-var configs = require('./libs/configs');
-window.configs = configs;
-/*var ipcProvider = require('./libs/ipcProvider');
-window.ipcProvider = ipcProvider;
-var rpcClient = require('./libs/rpcClient');
-window.rpcClient = rpcClient;
-var rpcHandler = require('./libs/rpcHandler');
-window.rpcHandler = rpcHandler;
-var privMethodHandler = require('./libs/privMethodHandler');
-window.privMethodHandler = privMethodHandler;
-var parityOutputProcessor = require('./libs/parityOutputProcessor');
+var angular                  = require('angular');
+var configs                  = require('./libs/configs');
+window.configs               = configs;
+/*var ipcProvider            = require('./libs/ipcProvider');
+window.ipcProvider           = ipcProvider;
+var rpcClient                = require('./libs/rpcClient');
+window.rpcClient             = rpcClient;
+var rpcHandler               = require('./libs/rpcHandler');
+window.rpcHandler            = rpcHandler;
+var privMethodHandler        = require('./libs/privMethodHandler');
+window.privMethodHandler     = privMethodHandler;
+var parityOutputProcessor    = require('./libs/parityOutputProcessor');
 window.parityOutputProcessor = parityOutputProcessor;*/
-var clientHandler = require('./libs/clientHandler');
-window.clientHandler = clientHandler;
-var configCtrl = require('./controllers/configCtrl');
+var clientHandler            = require('./libs/clientHandler');
+window.clientHandler         = clientHandler;
+var configCtrl               = require('./controllers/configCtrl');
 
-var app = angular.module('mewifyApp', []);
+var app                      = angular.module('mewifyApp', []);
+
 app.controller('configCtrl', ['$scope', configCtrl]);
 
 },{"./controllers/configCtrl":4,"./libs/clientHandler":5,"./libs/configs":6,"angular":3}]},{},[15]);

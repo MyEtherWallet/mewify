@@ -60,6 +60,7 @@ Events.Error = function(msg) {
     Events.notifier.notify({
         'title': 'Mewify - Error',
         'message': msg,
+        'icon': '../images/icon.png',
         'sound': true
     });
 }
@@ -68,6 +69,7 @@ Events.Info = function(msg) {
     Events.notifier.notify({
         'title': 'Mewify - Info',
         'message': msg,
+        'icon':'../images/icon.png',
         'sound': true
     });
 }

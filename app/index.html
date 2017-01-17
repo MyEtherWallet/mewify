@@ -8,7 +8,7 @@
   <meta name="description" content="Interact with DApps locally...without syncing the chain.">
   <meta name="author" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/mewify-master.min.css">
+  <link rel="stylesheet" href="styles/mewify-master.min.css">
   <script type="text/javascript" src="js/mewify-native.min.js"></script>
   <script type="text/javascript" src="js/mewify-master.min.js"></script>
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
@@ -20,51 +20,51 @@
 </head>
 
 <body class="home">
+
   <header>
     <section class="container">
       <img src="images/mewify-logo.svg" height="64px" width="auto" alt="Mewify" />
-      <div class="tagline"> No more syncing the chain. &middot; v0.0.1 </div>
+      <div class="tagline"> No more syncing the chain &middot; v0.0.1 </div>
     </section>
   </header>
-  <article ng-controller='configCtrl'>
-    <div class="container">
-      <h1> Enter your Information </h1>
-      <div class="form-group">
-        <label>RPC port:</label>
-        <input class="form-control" type="text" ng-model="clientConfig.httpPort" ng-disabled="disableForm">
-        <label>SSL RPC port:</label>
-        <input class="form-control" type="text" ng-model="clientConfig.httpsPort" ng-disabled="disableForm">
-      </div>
-      <div class="form-group">
-        <label>IPC path:</label>
-        <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]" ng-disabled="disableForm">
-      </div>
-      <div class="form-group">
-        <label>Keystore location:</label>
-        <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]" ng-disabled="disableForm">
-      </div>
-      <div class="form-group">
-        <label>MEW Node:</label>
-        <select ng-model="clientConfig.node" class="form-control" ng-disabled="disableForm">
-          <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node}}">{{node.name}}</option>
-        </select>
-      </div>
-      <div class="form-group ">
-        <a class="btn btn-info btn-block" ng-click="saveConfig()" ng-show="showSave"> SAVE </a>
-        <a class="btn btn-success btn-block" ng-click="start()" ng-show="showStart"> START </a>
-        <a class="btn btn-danger btn-block" ng-click="stop()" ng-show="showStop"> STOP </a>
-      </div>
+
+  <article class="container" ng-controller='configCtrl'>
+    <h1> Enter your Information </h1>
+    <div class="form-group">
+      <label>RPC port:</label>
+      <input class="form-control" type="text" ng-model="clientConfig.httpPort" ng-disabled="disableForm">
+      <label>SSL RPC port:</label>
+      <input class="form-control" type="text" ng-model="clientConfig.httpsPort" ng-disabled="disableForm">
+    </div>
+    <div class="form-group">
+      <label>IPC path:</label>
+      <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]" ng-disabled="disableForm">
+    </div>
+    <div class="form-group">
+      <label>Keystore location:</label>
+      <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]" ng-disabled="disableForm">
+    </div>
+    <div class="form-group">
+      <label>MEW Node:</label>
+      <select ng-model="clientConfig.node" class="form-control" ng-disabled="disableForm">
+        <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node}}">{{node.name}}</option>
+      </select>
+    </div>
+    <div class="form-group ">
+      <a class="btn btn-info btn-block" ng-click="saveConfig()" ng-show="showSave"> SAVE </a>
+      <a class="btn btn-success btn-block" ng-click="start()" ng-show="showStart"> START </a>
+      <a class="btn btn-danger btn-block" ng-click="stop()" ng-show="showStop"> STOP </a>
     </div>
   </article>
   <footer>
     <div class="container">
-      <p>A project by MyEtherWallet&nbsp;&nbsp;&middot;&nbsp;&nbsp;
-      Donations appreciated: <span class="mono wrap">0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8</span></p>
-      <p>Created by <a href="https://github.com/kvhnuke" target="_blank">kvhnuke</a> & <a href="https://github.com/tayvano" target="_blank">tayvano</a>&nbsp;&nbsp;
-      &middot;&nbsp;&nbsp;<a href="https://www.mewify.com" target="_blank">Mewify on Github</a>&nbsp;&nbsp;
-      &middot;&nbsp;&nbsp;<a href="https://www.myetherwallet.com" target="_blank">MyEtherWallet.com</a>&nbsp;&nbsp;
-      &middot;&nbsp;&nbsp;<a href="mailto:admin@mewify.com" target="_blank">Email&nbsp;Us</a>&nbsp;&nbsp;
-      &middot;&nbsp;&nbsp;<a href="https://twitter.com/myetherwallet" target="_blank">Follow&nbsp;us&nbsp;on&nbsp;Twitter</a>
+      <p>A project by MyEtherWallet. Donations appreciated: <span class="mono wrap">0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8</span></p>
+      <p>
+        Created by <a href="https://github.com/kvhnuke" target="_blank">kvhnuke</a> & <a href="https://github.com/tayvano" target="_blank">tayvano</a>&nbsp;&nbsp;
+        &middot;&nbsp;&nbsp;<a href="https://www.mewify.com" target="_blank">Mewify on Github</a>&nbsp;&nbsp;
+        &middot;&nbsp;&nbsp;<a href="https://www.myetherwallet.com" target="_blank">MyEtherWallet.com</a>&nbsp;&nbsp;
+        &middot;&nbsp;&nbsp;<a href="mailto:myetherwallet+mewify@gmail.com" target="_blank">Email&nbsp;Us</a>&nbsp;&nbsp;
+        &middot;&nbsp;&nbsp;<a href="https://twitter.com/myetherwallet" target="_blank">Follow&nbsp;us&nbsp;on&nbsp;Twitter</a>
       </p>
     </div>
   </footer>
