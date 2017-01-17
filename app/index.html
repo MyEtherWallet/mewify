@@ -28,34 +28,90 @@
     </section>
   </header>
 
+
+
+
+
   <article class="container" ng-controller='configCtrl'>
     <h1> Enter your Information </h1>
+
     <div class="form-group">
       <label>RPC port:</label>
       <input class="form-control" type="text" ng-model="clientConfig.httpPort" ng-disabled="disableForm">
+    </div>
+
+    <div class="form-group">
       <label>SSL RPC port:</label>
       <input class="form-control" type="text" ng-model="clientConfig.httpsPort" ng-disabled="disableForm">
     </div>
+
     <div class="form-group">
       <label>IPC path:</label>
       <input class="form-control" type="text" ng-model="clientConfig.ipc[configs.platform]" ng-disabled="disableForm">
     </div>
+
     <div class="form-group">
       <label>Keystore location:</label>
       <input class="form-control" type="text" ng-model="clientConfig.keystore[configs.platform]" ng-disabled="disableForm">
     </div>
+
     <div class="form-group">
       <label>MEW Node:</label>
       <select ng-model="clientConfig.node" class="form-control" ng-disabled="disableForm">
         <option ng-repeat="node in clientConfig.mewNodes track by $index" value="{{node}}">{{node.name}}</option>
       </select>
     </div>
+
     <div class="form-group ">
       <a class="btn btn-info btn-block" ng-click="saveConfig()" ng-show="showSave"> SAVE </a>
       <a class="btn btn-success btn-block" ng-click="start()" ng-show="showStart"> START </a>
       <a class="btn btn-danger btn-block" ng-click="stop()" ng-show="showStop"> STOP </a>
     </div>
   </article>
+
+
+
+
+
+  <article class="container confirmation-dialog">
+    <h1 class="text-danger text-center">Warning!</h3>
+
+    <table class="table text-center"><tbody><tr>
+      <td><div id="addressIdenticon" class="med" title="Address Indenticon" blockie-address="{{wallet.getAddressString()}}" watch-var="wallet.getAddressString()"></div></td>
+      <td class="mono"> -> <br /> 1 ETH </td>
+      <td><div id="addressIdenticon" class="med" title="Address Indenticon" blockie-address="{{tx.to}}" watch-var="tx.to"></div></td>
+    </tr></tbody></table>
+    <p>
+      <span translate="SENDModal_Content_1">You are about to send</span>
+      <strong class="mono">1 ETH</strong>
+      <span translate="SENDModal_Content_2">to address</span>
+      <strong class="mono wrap">0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8</strong>
+    </p>
+    <p>
+      You are sending on the <strong> ETH Chain </strong> chain, which
+      <strong> is not susceptible to replay attacks.</strong>
+    </p>
+    <p>
+      The node you are sending through is provided by <strong>MyEtherWallet</strong>.
+    </p>
+    <div class="text-center">
+      <h4 class="text-danger ">Are you sure you want to do this? </h4>
+      <button class="btn btn-default">No, get me out of here</button>
+      <button class="btn btn-primary">Yes, send transaction</button>
+    </div>
+
+    <div class="text-success text-center"> Success! Your transaction went through! </div>
+    <div class="text-danger text-center"> ERROR! Your transaction did not go through! </div>
+
+  </article>
+
+
+
+
+
+
+
+
   <footer>
     <div class="container">
       <p>A project by MyEtherWallet. Donations appreciated: <span class="mono wrap">0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8</span></p>
