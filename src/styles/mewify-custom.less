@@ -4,6 +4,22 @@ html {
   height: 100%;
 }
 
+.home {
+  display: flex;
+  flex-direction: column;
+  header {
+    .bg-gradient();
+    .header-branding();
+  }
+  article {
+    background-color: white;
+    flex: 1;
+  }
+  footer {
+    background-color: @ether-navy;
+  }
+}
+
 .container {
   width: 100%;
   max-width: 1400px;
@@ -27,15 +43,16 @@ textarea {
 footer {
   background-color: @ether-navy;
   color: white;
-  margin-top: 100px;
+  margin-top: 10px;
+  font-size: 14px;
   p {
-    margin: 10px 0;
+    margin: 7px 0;
   }
   a {
-    color: #4ac8ed;
+    color: rgba(255, 255, 255, 0.75);;
     &:hover,
     &:focus {
-      color: darken(#4ac8ed, 5%);
+      color: lighten(@ether-light, 20%);
     }
   }
   .modal,
