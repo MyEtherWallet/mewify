@@ -3,17 +3,17 @@ module.exports={
     "httpPort": 8545,
     "httpsPort": 8546,
     "ipc": {
-        "win32": "\\.\\pipe\\geth.ipc",
+        "win32": "\\\\.\\pipe\\geth.ipc",
         "darwin": "[[HOME_DIR]]/Library/Ethereum/geth.ipc",
         "linux": "[[HOME_DIR]]/.ethereum/geth.ipc"
     },
     "keystore": {
-        "win32": "[[HOME_DIR]]/mewify/keys/",
+        "win32": "[[HOME_DIR]]\\mewify\\keys\\",
         "darwin": "[[HOME_DIR]]/mewify/keys/",
         "linux": "[[HOME_DIR]]/mewify/keys/"
     },
     "configDir": {
-        "win32": "[[HOME_DIR]]/mewify/conf/",
+        "win32": "[[HOME_DIR]]\\mewify\\conf\\",
         "darwin": "[[HOME_DIR]]/mewify/conf/",
         "linux": "[[HOME_DIR]]/mewify/conf/"
     },
