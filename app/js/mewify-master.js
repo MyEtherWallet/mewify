@@ -30,7 +30,7 @@ module.exports={
         "blockExplorerTX": "https://testnet.etherscan.io/tx/[[txHash]]",
         "blockExplorerAddr": "https://testnet.etherscan.io/address/[[address]]"
     }],
-    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1}"
+    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}"
 }
 
 },{}],2:[function(require,module,exports){
