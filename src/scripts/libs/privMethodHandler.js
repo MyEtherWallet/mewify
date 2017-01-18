@@ -8,7 +8,7 @@ var privMethodHandler = function(server) {
         "eth_coinbase": 'ethCoinbase',
         "personal_signAndSendTransaction": 'signAndSendTransaction',
         "personal_sendTransaction": 'signAndSendTransaction',
-        "eth_sendTransaction":'signAndSendTransaction',
+        "eth_sendTransaction": 'signAndSendTransaction',
         "personal_newAccount": "personalNewAccount",
         "rpc_modules": "rpcModules"
     }
@@ -81,22 +81,28 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
         });
     }
 }
-var decryptWalletAndSign = function(cont, tx, pass, server, callback) {
+var decryptWalletAndSign = function(cont, tx, uiTx, server, callback) {
     try {
-        tx.sign(ethUtil.Wallet.fromV3(cont, pass, true).getPrivateKey());
+        tx.sign(ethUtil.Wallet.fromV3(cont, uiTx.pass, true).getPrivateKey());
         var rawTx = tx.serialize().toString('hex');
         server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
-            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-            else callback(privMethodHandler.getCallbackObj(false, '', data.result));
+            if (data.error) {
+                callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                uiTx.callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+            } else {
+                callback(privMethodHandler.getCallbackObj(false, '', data.result));
+                uiTx.callback(privMethodHandler.getCallbackObj(false, '', data.result));
+            }
         });
     } catch (err) {
         Events.Error(err.message);
         callback(privMethodHandler.getCallbackObj(true, err.message, []));
+        uiTx.callback(privMethodHandler.getCallbackObj(true, err.message, []));
     }
 }
 privMethodHandler.prototype.signAndSendTransaction = function(params, callback) {
     var _this = this;
-    if(!params[1]) params[1] = ''; 
+    if (!params[1]) params[1] = '';
     var accountFound = false;
     privMethodHandler.accounts.forEach(function(account) {
         if (accountFound) return;
@@ -115,7 +121,7 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                             angularApprovalHandler.showTxConfirm(tempTx, function(data) {
                                 if (data.error) callback(data);
                                 else {
-                                    decryptWalletAndSign(fCont.data, tx, tempTx.pass, _this.server, callback);
+                                    decryptWalletAndSign(fCont.data, tx, tempTx, _this.server, callback);
                                 }
                             });
                         }

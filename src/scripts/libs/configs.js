@@ -47,6 +47,9 @@ configs.getKeysPath = function() {
 configs.getNodeUrl = function() {
     return JSON.parse(configs.default.node).url;
 };
+configs.getNodeBlockExplorerTX = function() {
+    return JSON.parse(configs.default.node).blockExplorerTX;
+};
 configs.getNodeName = function() {
     return JSON.parse(configs.default.node).name;
 };

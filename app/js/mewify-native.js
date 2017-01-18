@@ -22,7 +22,7 @@ fileIO.readAllFiles = function(dirname, onFileContent, onError) {
             onError(err);
             return;
         }
-        if(!filenames.length) onFileContent('', '', true);
+        if (!filenames.length) onFileContent('', '', true);
         filenames.forEach(function(filename, id) {
             _this.fs.readFile(dirname + filename, 'utf-8', function(err, content) {
                 if (err) {
@@ -73,7 +73,7 @@ Events.Info = function(msg) {
     Events.notifier.notify({
         'title': 'Mewify - Info',
         'message': msg,
-        'icon':'../images/icon.png',
+        'icon': '../images/icon.png',
         'sound': true
     });
 }
@@ -85,6 +85,7 @@ netIO.https = require('https');
 netIO.express = require('express');
 netIO.pem = require('pem');
 netIO.bodyParser = require('body-parser');
+netIO.openURL = require("open");
 
 var ethUtil = require('ethereumjs-util');
 ethUtil.crypto = require('crypto');

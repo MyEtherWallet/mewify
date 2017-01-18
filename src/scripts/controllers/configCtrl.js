@@ -7,8 +7,9 @@ var configCtrl = function($scope) {
         if (!$scope.$$phase) $scope.$apply();
     });
     $scope.showSave = $scope.showConfirmTxDiv = $scope.showStop = $scope.disableForm = false;
-    $scope.showInitDiv = $scope.showStart = true;
+    $scope.showInitDiv = $scope.showStart = true; 
     $scope.clientHandler = null;
+    $scope.openUrl = netIO.openURL;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
             $scope.showSave = true;

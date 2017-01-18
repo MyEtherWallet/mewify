@@ -17,20 +17,22 @@ module.exports={
         "darwin": "[[HOME_DIR]]/mewify/conf/",
         "linux": "[[HOME_DIR]]/mewify/conf/"
     },
-    "mewNodes": [
-        {
-            "name": "ETH",
-            "url": "https://api.myetherapi.com/eth",
-            "chainId": 1
-        },
-        {
-            "name": "Ropsten",
-            "url": "https://api.myetherapi.com/rop",
-            "chainId": 3
-        }
-    ],
+    "mewNodes": [{
+        "name": "ETH",
+        "url": "https://api.myetherapi.com/eth",
+        "chainId": 1,
+        "blockExplorerTX": "https://etherscan.io/tx/[[txHash]]",
+        "blockExplorerAddr": "https://etherscan.io/address/[[address]]"
+    }, {
+        "name": "Ropsten",
+        "url": "https://api.myetherapi.com/rop",
+        "chainId": 3,
+        "blockExplorerTX": "https://testnet.etherscan.io/tx/[[txHash]]",
+        "blockExplorerAddr": "https://testnet.etherscan.io/address/[[address]]"
+    }],
     "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1}"
 }
+
 },{}],2:[function(require,module,exports){
 /**
  * @license AngularJS v1.6.1
@@ -35764,8 +35766,9 @@ var configCtrl = function($scope) {
         if (!$scope.$$phase) $scope.$apply();
     });
     $scope.showSave = $scope.showConfirmTxDiv = $scope.showStop = $scope.disableForm = false;
-    $scope.showInitDiv = $scope.showStart = true;
+    $scope.showInitDiv = $scope.showStart = true; 
     $scope.clientHandler = null;
+    $scope.openUrl = netIO.openURL;
     $scope.$watch('clientConfig', function() {
         if (JSON.stringify($scope.clientConfig) != $scope.clientConfigStr)
             $scope.showSave = true;
@@ -35832,30 +35835,59 @@ module.exports = blockiesDrtv;
 var angularApprovalHandler = function() {}
 angularApprovalHandler.prototype.setScope = function(scope) {
     this.scope = scope;
+    this.scope.isTxConfirmActive = false;
+    this.allDivs = ['showInitDiv', 'showConfirmTxDiv', 'showTxResultDiv'];
 }
 angularApprovalHandler.prototype.removeScope = function() {
     this.scope = null;
 }
-angularApprovalHandler.prototype.showHideDiv = function(name, show) {
-    this.scope.showInitDiv = !show;
-    this.scope[name] = show;
+angularApprovalHandler.prototype.showDiv = function(name) {
+    var _this = this;
+    this.allDivs.forEach(function(div) {
+        _this.scope[div] = div == name ? true : false;
+    });
 }
 angularApprovalHandler.prototype.showTxConfirm = function(tx, callback) {
-	var _this = this;
-    this.showHideDiv('showConfirmTxDiv', true);
+    var _this = this;
+    if (_this.scope.isTxConfirmActive) {
+        callback({ error: true, msg: 'Transaction denied - waiting for approval on another tx', data: false });
+        return;
+    }
+    _this.scope.isTxConfirmActive = true;
+    this.showDiv('showConfirmTxDiv');
+    tx.responseSent = false;
     tx.approve = function() {
         nwGui.setAlwaysOnTop(false);
-        _this.showHideDiv('showConfirmTxDiv', false);
+        _this.showDiv('showTxResultDiv');
+        _this.scope.isTxConfirmActive = false;
+        tx.responseSent = true;
+        if (!_this.scope.$$phase) _this.scope.$apply();
         callback({ error: false, msg: '', data: true });
     }
     tx.deny = function() {
         nwGui.setAlwaysOnTop(false);
-        _this.showHideDiv('showConfirmTxDiv', false);
+        _this.showDiv('showInitDiv');
+        _this.scope.isTxConfirmActive = false;
+        tx.responseSent = true;
+        if (!_this.scope.$$phase) _this.scope.$apply();
         callback({ error: true, msg: 'Transaction denied', data: false });
+    }
+    tx.callback = function(data) {
+        tx.error = data.error;
+        tx.msg = data.msg;
+        tx.hash = data.data;
+        if (!_this.scope.$$phase) _this.scope.$apply();
+    }
+    tx.backHome = function() {
+        _this.showDiv('showInitDiv');
+        if (!_this.scope.$$phase) _this.scope.$apply();
     }
     this.scope.tx = tx;
     if (!this.scope.$$phase) this.scope.$apply();
     nwGui.setAlwaysOnTop(true);
+    setTimeout(function() {
+        if (!_this.scope.tx.responseSent) tx.deny();
+    }, 30000);
 }
 module.exports = angularApprovalHandler;
 
@@ -35923,6 +35955,9 @@ configs.getKeysPath = function() {
 };
 configs.getNodeUrl = function() {
     return JSON.parse(configs.default.node).url;
+};
+configs.getNodeBlockExplorerTX = function() {
+    return JSON.parse(configs.default.node).blockExplorerTX;
 };
 configs.getNodeName = function() {
     return JSON.parse(configs.default.node).name;
@@ -36278,7 +36313,7 @@ var privMethodHandler = function(server) {
         "eth_coinbase": 'ethCoinbase',
         "personal_signAndSendTransaction": 'signAndSendTransaction',
         "personal_sendTransaction": 'signAndSendTransaction',
-        "eth_sendTransaction":'signAndSendTransaction',
+        "eth_sendTransaction": 'signAndSendTransaction',
         "personal_newAccount": "personalNewAccount",
         "rpc_modules": "rpcModules"
     }
@@ -36351,22 +36386,28 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
         });
     }
 }
-var decryptWalletAndSign = function(cont, tx, pass, server, callback) {
+var decryptWalletAndSign = function(cont, tx, uiTx, server, callback) {
     try {
-        tx.sign(ethUtil.Wallet.fromV3(cont, pass, true).getPrivateKey());
+        tx.sign(ethUtil.Wallet.fromV3(cont, uiTx.pass, true).getPrivateKey());
         var rawTx = tx.serialize().toString('hex');
         server.getResponse({ "jsonrpc": "2.0", "method": "eth_sendRawTransaction", "params": ['0x' + rawTx], "id": privMethodHandler.getRandomId() }, function(data) {
-            if (data.error) callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
-            else callback(privMethodHandler.getCallbackObj(false, '', data.result));
+            if (data.error) {
+                callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+                uiTx.callback(privMethodHandler.getCallbackObj(true, data.error.message, ''));
+            } else {
+                callback(privMethodHandler.getCallbackObj(false, '', data.result));
+                uiTx.callback(privMethodHandler.getCallbackObj(false, '', data.result));
+            }
         });
     } catch (err) {
         Events.Error(err.message);
         callback(privMethodHandler.getCallbackObj(true, err.message, []));
+        uiTx.callback(privMethodHandler.getCallbackObj(true, err.message, []));
     }
 }
 privMethodHandler.prototype.signAndSendTransaction = function(params, callback) {
     var _this = this;
-    if(!params[1]) params[1] = ''; 
+    if (!params[1]) params[1] = '';
     var accountFound = false;
     privMethodHandler.accounts.forEach(function(account) {
         if (accountFound) return;
@@ -36385,7 +36426,7 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                             angularApprovalHandler.showTxConfirm(tempTx, function(data) {
                                 if (data.error) callback(data);
                                 else {
-                                    decryptWalletAndSign(fCont.data, tx, tempTx.pass, _this.server, callback);
+                                    decryptWalletAndSign(fCont.data, tx, tempTx, _this.server, callback);
                                 }
                             });
                         }
