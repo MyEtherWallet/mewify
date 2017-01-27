@@ -35765,8 +35765,9 @@ var configCtrl = function($scope) {
         $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
         if (!$scope.$$phase) $scope.$apply();
     });
+    $scope.Validator = validator;
     $scope.showSave = $scope.showConfirmTxDiv = $scope.showStop = $scope.disableForm = false;
-    $scope.showInitDiv = $scope.showStart = true; 
+    $scope.showInitDiv = $scope.showStart = true;
     $scope.clientHandler = null;
     $scope.openUrl = netIO.openURL;
     $scope.$watch('clientConfig', function() {
@@ -35788,11 +35789,24 @@ var configCtrl = function($scope) {
     }
     $scope.start = function() {
         if (!$scope.clientHandler) {
-            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
-            $scope.showStart = false;
-            $scope.showStop = true;
-            $scope.disableForm = true;
-            angularApprovalHandler.setScope($scope);
+            $scope.Validator.isPortAvailable($scope.clientConfig.httpPort, function(data) {
+                if (data) {
+                    $scope.Validator.isPortAvailable($scope.clientConfig.httpsPort, function(data) {
+                        if (data) {
+                            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
+                            $scope.showStart = false;
+                            $scope.showStop = true;
+                            $scope.disableForm = true;
+                            angularApprovalHandler.setScope($scope);
+                            if (!$scope.$$phase) $scope.$apply();
+                        } else {
+                            Events.Error("HTTPS port not available");
+                        }
+                    });
+                } else {
+                    Events.Error("HTTP port not available, please make sure geth and parity is not running with rpc");
+                }
+            });
         }
     }
     $scope.stop = function() {
@@ -35944,14 +35958,20 @@ configs.init = function(callback) {
 
     }
 }
+var normalizeDirPath = function(path) {
+    if (path.slice(-1) != fileIO.path.sep) {
+        return path + fileIO.path.sep;
+    }
+    return path;
+}
 configs.getConfigPath = function() {
     return configs.default.configDir[configs.platform] + 'conf.json';
 };
 configs.getConfigDir = function() {
-    return configs.default.configDir[configs.platform];
+    return normalizeDirPath(configs.default.configDir[configs.platform]);
 };
 configs.getKeysPath = function() {
-    return configs.default.keystore[configs.platform];
+    return normalizeDirPath(configs.default.keystore[configs.platform]);
 };
 configs.getNodeUrl = function() {
     return JSON.parse(configs.default.node).url;
@@ -36057,29 +36077,28 @@ var httpProvider = function(httpPort, httpsPort) {
             console.log('socket', socketId, 'closed');
             delete _this.openSockets[socketId];
         });
-    }
-    try {
-        _this.httpServer = netIO.http.createServer(app);
-        _this.httpServer.listen(httpPort, function() {
-            console.log("http server started");
+        socket.on('error', function(err) {
+            console.log('socket', socketId, err);
         });
-        _this.httpServer.on('connection', onConnection);
-    } catch (e) {
-        console.log(e);
-        Events.Error(e.message);
     }
+    var onError = function(err) {
+        console.error('http Connection Error', err);
+        Events.Error(err.message);
+    }
+    _this.httpServer = netIO.http.createServer(app);
+    _this.httpServer.on('connection', onConnection);
+    _this.httpServer.on('error', onError);
+    _this.httpServer.listen(httpPort, function() {
+        console.log("http server started");
+    });
     var startSSL = function(keys) {
-        try {
-            var httpsServer = netIO.https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
-            httpsServer.listen(httpsPort, function() {
-                console.log("https server started");
-            });
-            httpsServer.on('connection', onConnection);
-            return httpsServer;
-        } catch (e) {
-            console.log(e);
-            Events.Error(e.message);
-        }
+        var httpsServer = netIO.https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
+        httpsServer.on('connection', onConnection);
+        httpsServer.on('error', onError);
+        httpsServer.listen(httpsPort, function() {
+            console.log("https server started");
+        });
+        return httpsServer;
     }
     var sslKeyPath = configs.getConfigDir() + 'ssl_key';
     if (fileIO.existsSync(sslKeyPath)) {
@@ -36137,6 +36156,9 @@ var IpcProvider = function(path, net) {
             console.log('ipc connection', socketId, 'closed');
             delete _this.openSockets[socketId];
         });
+        socket.on('error', function(err) {
+            console.log('socket', socketId, err);
+        });
     }
     this.server = net.createServer(function(client) {
         client.connected = true;
@@ -36153,6 +36175,7 @@ var IpcProvider = function(path, net) {
     });
     this.server.on('error', function(e) {
         console.error('IPC Connection Error', e);
+        Events.Error(e.message);
     });
     this.server.listen({ path: this.path }, function() {
         console.log("ipc server started");
@@ -36467,7 +36490,7 @@ var rpcClient = function(server) {
     this.request = netIO.request.defaults({ jar: true });
     this.parityOutputProcessor = new parityOutputProcessor();
 }
-rpcClient.prototype.call = function(body, callback) {
+rpcClient.prototype.call = function(body, retries, callback) {
     var _this = this;
     _this.request({
         url: _this.server,
@@ -36475,19 +36498,28 @@ rpcClient.prototype.call = function(body, callback) {
         json: true,
         body: body
     }, function(error, response, body) {
-        callback(error, response, body);
+        callback(error, response, body, retries);
     });
 }
 rpcClient.prototype.getResponse = function(body, callback) {
     var _this = this;
+    var _body = body;
     _this.parityOutputProcessor.preProcess(body);
-    _this.call(body, function(err, res, body) {
-        if (err) Events.Error(err);
-        else {
+    var resHandler = function(err, res, body, retries) {
+        if (err) {
+            if (retries >= 5) {
+                console.log(err);
+                Events.Error(err.message);
+                callback({ "jsonrpc": "2.0", "error": { "code": -1, "message": "Connection Error", "data": null }, "id": _body.id });
+            } else {
+                _this.call(_body, (retries + 1), resHandler);
+            }
+        } else {
             body = _this.parityOutputProcessor.postProcess(body);
             callback(body);
         }
-    });
+    };
+    _this.call(body, 0, resHandler);
 }
 module.exports = rpcClient;
 
@@ -36576,12 +36608,41 @@ rpcHandler.privMethods = require('./methods/privMethods.json');
 module.exports = rpcHandler;
 
 },{"./methods/privMethods.json":13,"./methods/remoteMethods.json":14,"./privMethodHandler":16}],19:[function(require,module,exports){
+'use strict';
+var validator = function() {}
+validator.isValidPort = function(value) {
+    if (!value) return false;
+    return !isNaN(parseFloat(value)) && isFinite(value) && parseFloat(value) >= 3000 && parseFloat(value) < 65536;
+}
+validator.isPortAvailable = function(port, callback) {
+    var tester = netIO.net.createServer()
+        .once('error', function(err) {
+            callback(false)
+        })
+        .once('listening', function() {
+            tester.once('close', function() { callback(true) })
+                .close()
+        }).listen(port);
+
+}
+validator.isValidDir = function(path) {
+    if (!path) return false;
+    return fileIO.fs.existsSync(path) && fileIO.fs.lstatSync(path).isDirectory();
+}
+validator.isValidIPC = function(path) {
+    if (!path) return false;
+    return validator.isValidDir(fileIO.path.dirname(path)) && fileIO.path.extname(path) == ".ipc";
+}
+module.exports = validator;
+
+},{}],20:[function(require,module,exports){
 var angular = require('angular');
 window.configs = require('./libs/configs');
 window.clientHandler = require('./libs/clientHandler');
 window.etherUnits = require('./libs/etherUnits');
 window.BigNumber = require('bignumber.js');
 var angularApprovalHandler = require('./libs/angularApprovalHandler');
+window.validator = require('./libs/validator');
 window.angularApprovalHandler = new angularApprovalHandler();
 var blockies = require('./staticJS/blockies');
 var blockiesDrtv = require('./directives/blockiesDrtv');
@@ -36592,7 +36653,7 @@ app.directive('blockieAddress', blockiesDrtv);
 
 app.controller('configCtrl', ['$scope', configCtrl]);
 
-},{"./controllers/configCtrl":5,"./directives/blockiesDrtv":6,"./libs/angularApprovalHandler":7,"./libs/clientHandler":8,"./libs/configs":9,"./libs/etherUnits":10,"./staticJS/blockies":20,"angular":3,"bignumber.js":4}],20:[function(require,module,exports){
+},{"./controllers/configCtrl":5,"./directives/blockiesDrtv":6,"./libs/angularApprovalHandler":7,"./libs/clientHandler":8,"./libs/configs":9,"./libs/etherUnits":10,"./libs/validator":19,"./staticJS/blockies":21,"angular":3,"bignumber.js":4}],21:[function(require,module,exports){
 // https://github.com/alexvandesande/blockies/blob/master/blockies.js
 // updated tayvano 3.9.16
 (function() {
@@ -36704,4 +36765,4 @@ app.controller('configCtrl', ['$scope', configCtrl]);
   window.blockies = {create: createIcon};
 })();
 
-},{}]},{},[19]);
+},{}]},{},[20]);

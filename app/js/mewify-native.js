@@ -6,6 +6,7 @@ nwGui.setAlwaysOnTop = function(isOnTop) {
 var fileIO = {};
 fileIO.fs = require('fs');
 fileIO.mkdirp = require('mkdirp');
+fileIO.path = require('path');
 fileIO.readFile = function(path, callback) {
     this.fs.readFile(path, 'utf8', function(err, data) {
         if (err) {

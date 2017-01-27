@@ -4,6 +4,7 @@ window.clientHandler = require('./libs/clientHandler');
 window.etherUnits = require('./libs/etherUnits');
 window.BigNumber = require('bignumber.js');
 var angularApprovalHandler = require('./libs/angularApprovalHandler');
+window.validator = require('./libs/validator');
 window.angularApprovalHandler = new angularApprovalHandler();
 var blockies = require('./staticJS/blockies');
 var blockiesDrtv = require('./directives/blockiesDrtv');

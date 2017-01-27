@@ -30,29 +30,28 @@ var httpProvider = function(httpPort, httpsPort) {
             console.log('socket', socketId, 'closed');
             delete _this.openSockets[socketId];
         });
-    }
-    try {
-        _this.httpServer = netIO.http.createServer(app);
-        _this.httpServer.listen(httpPort, function() {
-            console.log("http server started");
+        socket.on('error', function(err) {
+            console.log('socket', socketId, err);
         });
-        _this.httpServer.on('connection', onConnection);
-    } catch (e) {
-        console.log(e);
-        Events.Error(e.message);
     }
+    var onError = function(err) {
+        console.error('http Connection Error', err);
+        Events.Error(err.message);
+    }
+    _this.httpServer = netIO.http.createServer(app);
+    _this.httpServer.on('connection', onConnection);
+    _this.httpServer.on('error', onError);
+    _this.httpServer.listen(httpPort, function() {
+        console.log("http server started");
+    });
     var startSSL = function(keys) {
-        try {
-            var httpsServer = netIO.https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
-            httpsServer.listen(httpsPort, function() {
-                console.log("https server started");
-            });
-            httpsServer.on('connection', onConnection);
-            return httpsServer;
-        } catch (e) {
-            console.log(e);
-            Events.Error(e.message);
-        }
+        var httpsServer = netIO.https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
+        httpsServer.on('connection', onConnection);
+        httpsServer.on('error', onError);
+        httpsServer.listen(httpsPort, function() {
+            console.log("https server started");
+        });
+        return httpsServer;
     }
     var sslKeyPath = configs.getConfigDir() + 'ssl_key';
     if (fileIO.existsSync(sslKeyPath)) {

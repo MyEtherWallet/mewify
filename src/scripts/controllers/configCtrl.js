@@ -6,8 +6,9 @@ var configCtrl = function($scope) {
         $scope.clientConfigStr = JSON.stringify($scope.clientConfig);
         if (!$scope.$$phase) $scope.$apply();
     });
+    $scope.Validator = validator;
     $scope.showSave = $scope.showConfirmTxDiv = $scope.showStop = $scope.disableForm = false;
-    $scope.showInitDiv = $scope.showStart = true; 
+    $scope.showInitDiv = $scope.showStart = true;
     $scope.clientHandler = null;
     $scope.openUrl = netIO.openURL;
     $scope.$watch('clientConfig', function() {
@@ -29,11 +30,24 @@ var configCtrl = function($scope) {
     }
     $scope.start = function() {
         if (!$scope.clientHandler) {
-            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
-            $scope.showStart = false;
-            $scope.showStop = true;
-            $scope.disableForm = true;
-            angularApprovalHandler.setScope($scope);
+            $scope.Validator.isPortAvailable($scope.clientConfig.httpPort, function(data) {
+                if (data) {
+                    $scope.Validator.isPortAvailable($scope.clientConfig.httpsPort, function(data) {
+                        if (data) {
+                            $scope.clientHandler = new clientHandler($scope.clientConfig.ipc[$scope.configs.platform], $scope.clientConfig.httpPort, $scope.clientConfig.httpsPort);
+                            $scope.showStart = false;
+                            $scope.showStop = true;
+                            $scope.disableForm = true;
+                            angularApprovalHandler.setScope($scope);
+                            if (!$scope.$$phase) $scope.$apply();
+                        } else {
+                            Events.Error("HTTPS port not available");
+                        }
+                    });
+                } else {
+                    Events.Error("HTTP port not available, please make sure geth and parity is not running with rpc");
+                }
+            });
         }
     }
     $scope.stop = function() {

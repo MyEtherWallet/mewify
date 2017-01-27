@@ -35,14 +35,20 @@ configs.init = function(callback) {
 
     }
 }
+var normalizeDirPath = function(path) {
+    if (path.slice(-1) != fileIO.path.sep) {
+        return path + fileIO.path.sep;
+    }
+    return path;
+}
 configs.getConfigPath = function() {
     return configs.default.configDir[configs.platform] + 'conf.json';
 };
 configs.getConfigDir = function() {
-    return configs.default.configDir[configs.platform];
+    return normalizeDirPath(configs.default.configDir[configs.platform]);
 };
 configs.getKeysPath = function() {
-    return configs.default.keystore[configs.platform];
+    return normalizeDirPath(configs.default.keystore[configs.platform]);
 };
 configs.getNodeUrl = function() {
     return JSON.parse(configs.default.node).url;

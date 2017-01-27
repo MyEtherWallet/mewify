@@ -18,6 +18,9 @@ var IpcProvider = function(path, net) {
             console.log('ipc connection', socketId, 'closed');
             delete _this.openSockets[socketId];
         });
+        socket.on('error', function(err) {
+            console.log('socket', socketId, err);
+        });
     }
     this.server = net.createServer(function(client) {
         client.connected = true;
@@ -34,6 +37,7 @@ var IpcProvider = function(path, net) {
     });
     this.server.on('error', function(e) {
         console.error('IPC Connection Error', e);
+        Events.Error(e.message);
     });
     this.server.listen({ path: this.path }, function() {
         console.log("ipc server started");
