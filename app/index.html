@@ -97,6 +97,30 @@
                 <button class="btn btn-primary" ng-click="tx.approve()">Send Transaction</button>
             </div>
         </article>
+        <article class="container confirmation-dialog" ng-show="showConfirmSignDiv">
+            <h1 class="text-danger text-center">Warning!</h1>
+            <p>
+                <span>You are about to sign</span>
+                <strong class="mono">{{tx.string}}</strong>
+                <span>from account</span>
+                <strong class="mono wrap">{{tx.from}}</strong>
+            </p>
+            <div class="text-center">
+                <div class="form-group">
+                    <h4 class="text-danger ">Enter your password to sign the data:</h4>
+                    <input class="form-control" type="password" ng-model="tx.pass">
+                </div>
+                <button class="btn btn-default" ng-click="tx.deny()">Do NOT Sign</button>
+                <button class="btn btn-primary" ng-click="tx.approve()">Sign data</button>
+            </div>
+        </article>
+        <article class="container confirmation-dialog text-center" ng-show="showSignResultDiv">
+            <h1 class="text-success" ng-show="!tx.error">Your signing was successful!</h1>
+            <h1 class="text-danger" ng-show="tx.error">There was an error on your sign request</h1>
+            <p class="mono wrap" ng-show="!tx.error">Signature: {{tx.hash}}</p>
+            <p class="mono wrap" ng-show="tx.error">{{tx.msg}}</p>
+            <button class="btn btn-default" ng-click="tx.backHome()">Go Back Home</button>
+        </article>
         <article class="container confirmation-dialog text-center" ng-show="showTxResultDiv">
             <h1 class="text-success" ng-show="!tx.error">Your transaction was successful!</h1>
             <h1 class="text-danger" ng-show="tx.error">There was an error on your transaction</h1>

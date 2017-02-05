@@ -1,6 +1,7 @@
 [
     "eth_accounts",
     "eth_coinbase",
+    "eth_sign",
     "eth_sendTransaction",
     "personal_listAccounts",
     "personal_newAccount",

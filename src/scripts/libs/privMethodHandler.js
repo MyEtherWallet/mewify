@@ -10,6 +10,7 @@ var privMethodHandler = function(server) {
         "personal_sendTransaction": 'signAndSendTransaction',
         "eth_sendTransaction": 'signAndSendTransaction',
         "personal_newAccount": "personalNewAccount",
+        "eth_sign": "ethSign",
         "rpc_modules": "rpcModules"
     }
     _this.ethAccounts('', function() {});
@@ -81,7 +82,7 @@ privMethodHandler.prototype.ethAccounts = function(params, callback) {
         });
     }
 }
-var decryptWalletAndSign = function(cont, tx, uiTx, server, callback) {
+var decryptAndSignTx = function(cont, tx, uiTx, server, callback) {
     try {
         tx.sign(ethUtil.Wallet.fromV3(cont, uiTx.pass, true).getPrivateKey());
         var rawTx = tx.serialize().toString('hex');
@@ -121,7 +122,7 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                             angularApprovalHandler.showTxConfirm(tempTx, function(data) {
                                 if (data.error) callback(data);
                                 else {
-                                    decryptWalletAndSign(fCont.data, tx, tempTx, _this.server, callback);
+                                    decryptAndSignTx(fCont.data, tx, tempTx, _this.server, callback);
                                 }
                             });
                         }
@@ -132,7 +133,45 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
         //break;
     });
     if (!accountFound) callback(privMethodHandler.getCallbackObj(true, 'Account not found', ''));
-
+}
+var decryptAndSignData = function(cont, uiTx, callback) {
+    try {
+        var signed = ethUtil.ecsign(uiTx.data, ethUtil.Wallet.fromV3(cont, uiTx.pass, true).getPrivateKey());
+        var combined = Buffer.concat([Buffer.from(signed.r), Buffer.from(signed.s), Buffer.from([signed.v])]);
+        var combinedHex = combined.toString('hex');
+        callback(privMethodHandler.getCallbackObj(false, '', '0x' + combinedHex));
+        uiTx.callback(privMethodHandler.getCallbackObj(false, '', '0x' + combinedHex));
+    } catch (err) {
+        Events.Error(err.message);
+        callback(privMethodHandler.getCallbackObj(true, err.message, []));
+        uiTx.callback(privMethodHandler.getCallbackObj(true, err.message, []));
+    }
+}
+privMethodHandler.prototype.ethSign = function(params, callback) {
+    var _this = this;
+    var accountFound = false;
+    privMethodHandler.accounts.forEach(function(account) {
+        if (accountFound) return;
+        if (account.address == params[0].toLowerCase()) {
+            accountFound = true;
+            fileIO.readFile(account.path, function(fCont) {
+                if (fCont.error) callback(fCont);
+                else {
+                    var dataBuf = new Buffer(params[1].replace('0x', ''), 'hex');
+                    var data = "\x19Ethereum Signed Message:\n" + dataBuf.length + dataBuf;
+                    var tempTx = { from: params[0], data: ethUtil.sha3(data), string: data };
+                    angularApprovalHandler.showSignConfirm(tempTx, function(data) {
+                        if (data.error) callback(data);
+                        else {
+                            decryptAndSignData(fCont.data, tempTx, callback);
+                        }
+                    });
+                }
+            });
+        }
+        //break;
+    });
+    if (!accountFound) callback(privMethodHandler.getCallbackObj(true, 'Account not found', ''));
 }
 privMethodHandler.getCallbackObj = function(isError, msg, data) {
     return { error: isError, msg: msg, data: data };
