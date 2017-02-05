@@ -38278,6 +38278,7 @@ module.exports=[
     "personal_newAccount",
     "personal_sendTransaction",
     "personal_signAndSendTransaction",
+    "personal_sign",
     "rpc_modules"
 ]
 
@@ -38385,6 +38386,7 @@ var privMethodHandler = function(server) {
         "eth_sendTransaction": 'signAndSendTransaction',
         "personal_newAccount": "personalNewAccount",
         "eth_sign": "ethSign",
+        "personal_sign": "ethSign",
         "rpc_modules": "rpcModules"
     }
     _this.ethAccounts('', function() {});
@@ -38524,6 +38526,7 @@ var decryptAndSignData = function(cont, uiTx, callback) {
 privMethodHandler.prototype.ethSign = function(params, callback) {
     var _this = this;
     var accountFound = false;
+    if (!params[2]) params[2] = '';
     privMethodHandler.accounts.forEach(function(account) {
         if (accountFound) return;
         if (account.address == params[0].toLowerCase()) {
@@ -38533,7 +38536,7 @@ privMethodHandler.prototype.ethSign = function(params, callback) {
                 else {
                     var dataBuf = new Buffer(params[1].replace('0x', ''), 'hex');
                     var data = "\x19Ethereum Signed Message:\n" + dataBuf.length + dataBuf;
-                    var tempTx = { from: params[0], data: ethUtil.sha3(data), string: data };
+                    var tempTx = { from: params[0], data: ethUtil.sha3(data), string: data, pass: params[2] };
                     angularApprovalHandler.showSignConfirm(tempTx, function(data) {
                         if (data.error) callback(data);
                         else {

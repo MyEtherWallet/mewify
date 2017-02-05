@@ -7,5 +7,6 @@
     "personal_newAccount",
     "personal_sendTransaction",
     "personal_signAndSendTransaction",
+    "personal_sign",
     "rpc_modules"
 ]
