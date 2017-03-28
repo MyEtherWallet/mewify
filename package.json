@@ -1,75 +1,74 @@
 {
-  "name": "mewify",
-  "version": "0.0.1",
-  "description": "No more syncing the chain.",
-  "keywords": [
-    "MyEtherWallet",
-    "mewify",
-    "Ethereum",
-    "mew"
-  ],
-  "main": "app/index.html",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nw .",
-    "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
-  },
-  "window": {
-    "title": "Mewify: A Project by MyEtherWallet",
-    "icon": "src/images/icon.png",
-    "width": 430,
-    "height": 665,
-    "min_width": 250,
-    "min_height": 400,
-    "max_width": 4000,
-    "max_height": 4000,
-    "position": "mouse",
-    "resizable": true
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MyEtherWallet/mewify.git"
-  },
-  "author": "kvhnuke & tayvano",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/MyEtherWallet/mewify/issues"
-  },
-  "homepage": "https://github.com/MyEtherWallet/mewify#readme",
-  "dependencies": {
-    "angular": "^1.6.1",
-    "bignumber.js": "^4.0.0",
-    "blockies": "0.0.2",
-    "body-parser": "^1.15.2",
-    "browserify": "^13.3.0",
-    "crypto": "0.0.3",
-    "ethereumjs-tx": "^1.2.2",
-    "ethereumjs-util": "^5.0.1",
-    "ethereumjs-wallet": "^0.6.0",
-    "express": "^4.14.0",
-    "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^3.1.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-cssnano": "^2.1.2",
-    "gulp-less": "^3.0.5",
-    "gulp-notify": "^2.2.0",
-    "gulp-plumber": "^1.1.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-uglify": "^1.5.3",
-    "http": "0.0.0",
-    "https": "^1.0.0",
-    "mkdirp": "^0.5.1",
-    "node-notifier": "^4.6.1",
-    "nw-builder": "^3.1.3",
-    "open": "0.0.5",
-    "path": "^0.12.7",
-    "pem": "^1.9.4",
-    "request": "^2.79.0",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
-  },
-  "devDependencies": {
-    "nw-builder": "^3.1.3"
-  }
+    "name": "mewify",
+    "version": "0.0.1",
+    "description": "No more syncing the chain.",
+    "keywords": [
+        "MyEtherWallet",
+        "mewify",
+        "Ethereum",
+        "mew"
+    ],
+    "main": "app/index.html",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nw .",
+        "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
+    },
+    "window": {
+        "title": "Mewify: A Project by MyEtherWallet",
+        "icon": "src/images/icon.png",
+        "width": 430,
+        "height": 665,
+        "min_width": 250,
+        "min_height": 400,
+        "max_width": 4000,
+        "max_height": 4000,
+        "position": "mouse",
+        "resizable": true
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MyEtherWallet/mewify.git"
+    },
+    "author": "kvhnuke & tayvano",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/MyEtherWallet/mewify/issues"
+    },
+    "homepage": "https://github.com/MyEtherWallet/mewify#readme",
+    "devDependencies": {
+        "nw-builder": "^3.1.3",
+        "angular": "^1.6.1",
+        "bignumber.js": "^4.0.0",
+        "blockies": "0.0.2",
+        "browserify": "^13.3.0",
+        "gulp-autoprefixer": "^3.1.0",
+        "gulp-concat": "^2.6.0",
+        "gulp-cssnano": "^2.1.2",
+        "gulp-less": "^3.0.5",
+        "gulp-notify": "^2.2.0",
+        "gulp-plumber": "^1.1.0",
+        "gulp-rename": "^1.2.2",
+        "gulp-sourcemaps": "^1.6.0",
+        "gulp-uglify": "^1.5.3",
+        "vinyl-buffer": "^1.0.0",
+        "vinyl-source-stream": "^1.1.0"
+    },
+    "dependencies": {
+        "mkdirp": "^0.5.1",
+        "path": "^0.12.7",
+        "node-notifier": "^4.6.1",
+        "request": "^2.79.0",
+        "http": "0.0.0",
+        "https": "^1.0.0",
+        "express": "^4.14.0",
+        "pem": "^1.9.4",
+        "body-parser": "^1.15.2",
+        "open": "0.0.5",
+        "crypto": "0.0.3",
+        "ethereumjs-util": "^5.0.1",
+        "ethereumjs-tx": "^1.2.2",
+        "ethereumjs-wallet": "^0.6.0",
+        "gulp": "^3.9.1"
+    }
 }

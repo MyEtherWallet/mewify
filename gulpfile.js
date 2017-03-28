@@ -124,7 +124,7 @@ gulp.task('buildApp', function() {
     var nw = new NwBuilder({
         files: ['./**/**', '!./src/**/**', '!./build/**/**'], // use the glob format
         platforms: ['osx64', 'win64', 'linux64'],
-        version: '0.19.5',
+        version: '0.21.3',
         buildDir: './build',
         forceDownload: true
     });

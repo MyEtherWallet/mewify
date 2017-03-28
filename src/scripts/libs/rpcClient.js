@@ -6,6 +6,7 @@ var rpcClient = function(server) {
     this.parityOutputProcessor = new parityOutputProcessor();
 }
 rpcClient.prototype.call = function(body, retries, callback) {
+    console.log(body);
     var _this = this;
     _this.request({
         url: _this.server,

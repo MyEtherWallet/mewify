@@ -28,6 +28,12 @@
         "chainId": 3,
         "blockExplorerTX": "https://testnet.etherscan.io/tx/[[txHash]]",
         "blockExplorerAddr": "https://testnet.etherscan.io/address/[[address]]"
+    }, {
+        "name": "ETC",
+        "url": "https://mewapi.epool.io",
+        "chainId": 61,
+        "blockExplorerTX": "https://gastracker.io/tx/[[txHash]]",
+        "blockExplorerAddr": "https://gastracker.io/addr/[[address]]"
     }],
     "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}"
 }
