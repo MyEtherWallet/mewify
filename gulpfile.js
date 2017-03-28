@@ -3,7 +3,6 @@ var autoprefixer = require('gulp-autoprefixer')
 var browserify = require('browserify')
 var buffer = require('vinyl-buffer')
 var cssnano = require('gulp-cssnano')
-var gulp = require('gulp')
 var gulpConcat = require('gulp-concat')
 var less = require('gulp-less')
 var notify = require('gulp-notify')
@@ -11,8 +10,9 @@ var plumber = require('gulp-plumber')
 var rename = require('gulp-rename')
 var source = require('vinyl-source-stream')
 var sourcemaps = require('gulp-sourcemaps')
-var uglify = require('gulp-uglify')
-var NwBuilder = require('nw-builder');
+var uglify = require('gulp-uglify') 
+var gulp = require('gulp')
+var NwBuilder = require('nw-builder')
 
 var src = './src/'
 var app = './app/'
@@ -122,7 +122,7 @@ gulp.task('copy', function() {
 
 gulp.task('buildApp', function() {
     var nw = new NwBuilder({
-        files: ['./**/**', '!./src/**/**', '!./build/**/**'], // use the glob format
+        files: ['./**/**', '!./src/**/**', '!./build/**/**', '!./cache/**/**'], // use the glob format
         platforms: ['osx64', 'win64', 'linux64'],
         version: '0.21.3',
         buildDir: './build',
