@@ -63,6 +63,12 @@
 - Enter **correct** password in Mewify
 - Confirm transaction
 
+## Running Tests
+- Install `mocha` globally:
+	-  `npm install -g mocha`
+- Run test command:
+	- `npm test`
+
 ---
 
 ### Contact
