@@ -37,10 +37,14 @@ var validEtherUnits = {
 var validUnitNames = Object.keys(validEtherUnits);
 
 describe('etherUnits.unitMap', function() {
-  it('should map units correctly', function() {
+  it('should map the correct units', function() {
     validUnitNames.forEach(function(name) {
-      assert.equal(etherUnits.unitMap[name], validEtherUnits[name]);
+      assert.equal(validEtherUnits[name], etherUnits.unitMap[name]);
     });
+  });
+
+  it('should map the correct number of units', function() {
+    assert.equal(validUnitNames.length, Object.keys(etherUnits.unitMap).length)
   });
 });
 
@@ -49,7 +53,6 @@ describe('etherUnits.getValueOfUnit', function() {
     global.BigNumber = BigNumber;
     global.globalFuncs = {};
     global.globalFuncs.errorMsgs = [];
-    global.globalFuncs.errorMsgs[4] = '';
   });
 
   after(function() {
@@ -57,7 +60,7 @@ describe('etherUnits.getValueOfUnit', function() {
     delete global.globalFuncs;
   });
 
-  it('should throw an error when bad unit is passed', function() {
+  it('should throw an error when a bad unit is passed', function() {
     try {
       etherUnits.getValueOfUnit('invalid');
     } catch (e) {
@@ -75,6 +78,16 @@ describe('etherUnits.getValueOfUnit', function() {
       assert.isTrue(etherUnits.getValueOfUnit(name) instanceof BigNumber);
     });
   });
+});
 
+describe('etherUnits.fiatToWei', function() {
+
+});
+
+describe('etherUnits.toFiat', function() {
+
+});
+
+describe('etherUnits.toEther', function() {
 
 });
