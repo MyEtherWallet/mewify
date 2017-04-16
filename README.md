@@ -65,6 +65,11 @@
 - Enter **correct** password in Mewify
 - Confirm transaction
 
+## Running Tests
+- Install `mocha` globally:
+	-  `npm install -g mocha`
+- Run test command:
+	- `npm test`
 
 ## Contact Us
 - Created & Maintained by [kvhnuke](https://github.com/kvhnuke) and [tayvano](https://github.com/tayvano)
