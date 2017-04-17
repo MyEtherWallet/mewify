@@ -44,7 +44,7 @@ describe('etherUnits.unitMap', function() {
   });
 
   it('should map the correct number of units', function() {
-    assert.equal(validUnitNames.length, Object.keys(etherUnits.unitMap).length)
+    assert.equal(validUnitNames.length, Object.keys(etherUnits.unitMap).length);
   });
 });
 
@@ -60,34 +60,94 @@ describe('etherUnits.getValueOfUnit', function() {
     delete global.globalFuncs;
   });
 
-  it('should throw an error when a bad unit is passed', function() {
+  it('should throw an error when a bad unit is supplied', function() {
     try {
       etherUnits.getValueOfUnit('invalid');
     } catch (e) {
-      return assert.isTrue(e instanceof Error);
+      return assert(e instanceof Error, 'an Error was not returned');
     }
-    assert.isTrue(false) //should return before this
+    assert(false, 'an error was not thrown') //should return before this
   });
 
   it('should default to ether if unit is undefined', function() {
-    assert.equal(etherUnits.getValueOfUnit(), validEtherUnits['ether']);
+    var actual = etherUnits.getValueOfUnit(),
+        expected = validEtherUnits['ether'];
+
+    assert(actual.toFixed() === expected, 'did not default to ether');
   });
 
-  it('should return a BigNumber for all valid units', function() {
+  it('should return the correct BigNumber for all valid units', function() {
     validUnitNames.forEach(function(name) {
-      assert.isTrue(etherUnits.getValueOfUnit(name) instanceof BigNumber);
+      var actual = etherUnits.getValueOfUnit(name),
+          expected = validEtherUnits[name];
+
+      assert(actual instanceof BigNumber, 'return value is not a BigNumber');
+      assert(actual.toFixed() === expected, 'value of unit is incorrect');
     });
   });
 });
 
 describe('etherUnits.fiatToWei', function() {
+  before(function() {
+    global.BigNumber = BigNumber;
+  });
 
+  after(function() {
+    delete global.BigNumber;
+  });
+
+  it('should convert $100 to 2000000000000000000 wei at $50/ETH', function() {
+    var actual = etherUnits.fiatToWei(100.00, 50.00),
+        expected = '2000000000000000000';
+
+    assert(actual === expected, 'wei returned was not correct');
+  });
 });
 
 describe('etherUnits.toFiat', function() {
+  before(function() {
+    global.BigNumber = BigNumber;
+  });
 
+  after(function() {
+    delete global.BigNumber;
+  });
+
+  it('should convert 5 ether to $250 at $50/ETH', function() {
+    var actual = etherUnits.toFiat(5, 'ether', 50.00),
+        expected = '250';
+    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+  });
 });
 
 describe('etherUnits.toEther', function() {
+  before(function() {
+    global.BigNumber = BigNumber;
+  });
 
+  after(function() {
+    delete global.BigNumber;
+  });
+
+  it('should convert 5000000000000000000 wei to 5 ether', function() {
+    var actual = etherUnits.toEther('5000000000000000000', 'wei'),
+        expected = '5';
+    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+  });
+});
+
+describe('etherUnits.toWei', function() {
+  before(function() {
+    global.BigNumber = BigNumber;
+  });
+
+  after(function() {
+    delete global.BigNumber;
+  });
+
+  it('should convert 5 ether to 5000000000000000000 wei', function() {
+    var actual = etherUnits.toWei('5', 'ether'),
+        expected = '5000000000000000000';
+    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+  });
 });
