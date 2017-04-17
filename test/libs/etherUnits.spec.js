@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 var path = require('path'),
-    chai = require('chai'),
     BigNumber = require('bignumber.js'),
+    chai = require('chai'),
     assert = chai.assert,
     srcRoot = path.resolve(__dirname + '/../../src'),
     etherUnits = require(srcRoot + '/scripts/libs/etherUnits');
@@ -39,12 +39,16 @@ var validUnitNames = Object.keys(validEtherUnits);
 describe('etherUnits.unitMap', function() {
   it('should map the correct units', function() {
     validUnitNames.forEach(function(name) {
-      assert.equal(validEtherUnits[name], etherUnits.unitMap[name]);
+      var actual = etherUnits.unitMap[name],
+          expected = validEtherUnits[name];
+      assert(actual === expected, 'expected ' + expected + ', got ' + actual);
     });
   });
 
   it('should map the correct number of units', function() {
-    assert.equal(validUnitNames.length, Object.keys(etherUnits.unitMap).length);
+    var actual = Object.keys(etherUnits.unitMap).length,
+        expected = validUnitNames.length;
+    assert(actual === expected, 'expected ' + expected + ', got ' + actual);
   });
 });
 
