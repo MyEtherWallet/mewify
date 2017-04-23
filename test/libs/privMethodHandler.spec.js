@@ -8,7 +8,7 @@ var path = require('path'),
     privMethodHandlerPath = srcRoot + '/scripts/libs/privMethodHandler',
     privMethodHandler = require(privMethodHandlerPath),
 
-    keyfilePathExample = "/path/to/keys/UTC--2017-04-22T02-30-52.646Z--1226aea065f9be33d2c5e658fbdc3795e02e5fa2",
+    keyfilePathExample = "/path/to/keys/UTC--2017-04-22T02-30-52.646Z--0cb19b15fe19414c93d59c599e94b2e497b620e9",
     keyfileContentExample = "{\"version\":3,\"id\":\"deaf3c18-196a-498f-8c8c-d484a25fa770\",\"address\":\"0cb19b15fe19414c93d59c599e94b2e497b620e9\",\"crypto\":{\"ciphertext\":\"3fcf507efcb128dfa209d09b7ee992a473dbb7ba629184f2a4ff2b767f266bf0\",\"cipherparams\":{\"iv\":\"79d459f090bce09cc81c4c7fcd52ee69\"},\"cipher\":\"aes-128-ctr\",\"kdf\":\"scrypt\",\"kdfparams\":{\"dklen\":32,\"salt\":\"781c9fd9ad45e068bf85844184636033806cdb68c7b6b84b1bdab9644d4e08fa\",\"n\":262144,\"r\":8,\"p\":1},\"mac\":\"eb742afe0c1e75386a83b915aaa9d9bc76ce96e341d4de46588eee3b1dafd5be\"}}",
     keyFileAddressExample = "0x0cb19b15fe19414c93d59c599e94b2e497b620e9";
 
@@ -70,7 +70,7 @@ function validateCallbackObj(obj) {
 
 
 describe('privMethodHandler.accounts', function() {
-  
+
   it('should init with accounts as an empty array', function() {
     expect(privMethodHandler.accounts).to.be.instanceof(Array);
     expect(privMethodHandler.accounts).to.be.empty;
