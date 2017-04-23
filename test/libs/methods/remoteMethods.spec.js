@@ -2,7 +2,7 @@
 
 var path = require('path'),
     chai = require('chai'),
-    assert = chai.assert,
+    expect = chai.expect,
     srcRoot = path.resolve(__dirname + '/../../../src'),
     remoteMethodsActual = require(srcRoot + '/scripts/libs/methods/remoteMethods');
 
@@ -63,17 +63,14 @@ describe('remoteMethods.json', function() {
     var actual = remoteMethodsActual.length,
         expected = remoteMethodsExpected.length;
 
-    assert(
-      actual === expected,
-      'expected privMethods to have length ' + expected + ', got ' + actual
-    );
+    expect(actual).to.equal(expected);
   });
 
   it('should have every expected method', function() {
     remoteMethodsExpected.forEach(function(method) {
       var actual = remoteMethodsActual.indexOf(method);
 
-      assert(actual !== -1, 'could not find method ' + method);
+      expect(actual).to.not.equal(-1);
     });
   });
 });
