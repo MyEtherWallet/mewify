@@ -3,7 +3,7 @@
 var path = require('path'),
     BigNumber = require('bignumber.js'),
     chai = require('chai'),
-    assert = chai.assert,
+    expect = chai.expect,
     srcRoot = path.resolve(__dirname + '/../../src'),
     etherUnits = require(srcRoot + '/scripts/libs/etherUnits');
 
@@ -41,14 +41,14 @@ describe('etherUnits.unitMap', function() {
     validUnitNames.forEach(function(name) {
       var actual = etherUnits.unitMap[name],
           expected = validEtherUnits[name];
-      assert(actual === expected, 'expected ' + expected + ', got ' + actual);
+      expect(actual).to.equal(expected);
     });
   });
 
   it('should map the correct number of units', function() {
     var actual = Object.keys(etherUnits.unitMap).length,
         expected = validUnitNames.length;
-    assert(actual === expected, 'expected ' + expected + ', got ' + actual);
+    expect(actual).to.equal(expected);
   });
 });
 
@@ -65,28 +65,27 @@ describe('etherUnits.getValueOfUnit', function() {
   });
 
   it('should throw an error when a bad unit is supplied', function() {
+    var caught = false;
     try {
       etherUnits.getValueOfUnit('invalid');
     } catch (e) {
-      return assert(e instanceof Error, 'an Error was not returned');
+      caught = e;
     }
-    assert(false, 'an error was not thrown') //should return before this
+    expect(caught).to.be.instanceof(Error);
   });
 
   it('should default to ether if unit is undefined', function() {
     var actual = etherUnits.getValueOfUnit(),
         expected = validEtherUnits['ether'];
-
-    assert(actual.toFixed() === expected, 'did not default to ether');
+    expect(actual.toFixed()).to.equal(expected);
   });
 
   it('should return the correct BigNumber for all valid units', function() {
     validUnitNames.forEach(function(name) {
       var actual = etherUnits.getValueOfUnit(name),
           expected = validEtherUnits[name];
-
-      assert(actual instanceof BigNumber, 'return value is not a BigNumber');
-      assert(actual.toFixed() === expected, 'value of unit is incorrect');
+      expect(actual).to.be.instanceof(BigNumber);
+      expect(actual.toFixed()).to.equal(expected);
     });
   });
 });
@@ -103,8 +102,7 @@ describe('etherUnits.fiatToWei', function() {
   it('should convert $100 to 2000000000000000000 wei at $50/ETH', function() {
     var actual = etherUnits.fiatToWei(100.00, 50.00),
         expected = '2000000000000000000';
-
-    assert(actual === expected, 'wei returned was not correct');
+    expect(actual).to.equal(expected);
   });
 });
 
@@ -120,7 +118,7 @@ describe('etherUnits.toFiat', function() {
   it('should convert 5 ether to $250 at $50/ETH', function() {
     var actual = etherUnits.toFiat(5, 'ether', 50.00),
         expected = '250';
-    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+    expect(actual).to.equal(expected);
   });
 });
 
@@ -136,7 +134,7 @@ describe('etherUnits.toEther', function() {
   it('should convert 5000000000000000000 wei to 5 ether', function() {
     var actual = etherUnits.toEther('5000000000000000000', 'wei'),
         expected = '5';
-    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+    expect(actual).to.equal(expected);
   });
 });
 
@@ -152,6 +150,6 @@ describe('etherUnits.toWei', function() {
   it('should convert 5 ether to 5000000000000000000 wei', function() {
     var actual = etherUnits.toWei('5', 'ether'),
         expected = '5000000000000000000';
-    assert(actual === expected, 'expected ' + actual + ' to equal ' + expected);
+    expect(actual).to.equal(expected);
   });
 });
