@@ -2,7 +2,7 @@
 
 var path = require('path'),
     chai = require('chai'),
-    assert = chai.assert,
+    expect = chai.expect,
     sinon = require('sinon'),
     srcRoot = path.resolve(__dirname + '/../../src'),
     parityOutputProcessor = require(srcRoot + '/scripts/libs/parityOutputProcessor'),
@@ -20,8 +20,7 @@ describe('parityOutputProcessor.processMethods', function() {
     processKeys.forEach(function(key) {
       var methodName = pop.processMethods[key],
           method = parityOutputProcessor[methodName];
-
-      assert(method instanceof Function, 'expected ' + key + ' to have a corresponding method');
+      expect(method).to.be.instanceof(Function);
     });
   });
 });
@@ -37,7 +36,7 @@ describe('parityOutputProcessor.prototype.preProcess', function() {
       pop.preProcess({id: index, method: key});
     });
 
-    assert(Object.keys(pop.queue).length === processKeys.length, "not all processMethods made it to queue");
+    expect(Object.keys(pop.queue).length).to.equal(processKeys.length);
   });
 
   it('should correctly process all processMethods when passed array of requests', function() {
@@ -47,7 +46,7 @@ describe('parityOutputProcessor.prototype.preProcess', function() {
       pop.preProcess([{id: index, method: key}]);
     });
 
-    assert(Object.keys(pop.queue).length === processKeys.length, "not all processMethods made it to queue");
+    expect(Object.keys(pop.queue).length).to.equal(processKeys.length);
   });
 
   it('should not process an invalid method', function() {
@@ -55,7 +54,7 @@ describe('parityOutputProcessor.prototype.preProcess', function() {
 
     pop.preProcess({id: 'X', method: 'invalid'});
 
-    assert(Object.keys(pop.queue).length === 0, 'parityOutputProcessor added an invalid method to queue');
+    expect(Object.keys(pop.queue).length).to.be.zero;
   });
 });
 
@@ -83,7 +82,7 @@ describe('parityOutputProcessor.prototype.postProcess', function() {
       pop.preProcess(req);
       pop.postProcess(req);
 
-      assert(spies[key].calledOnce, 'call count for ' + key + ' was ' + spies[key].callCount);
+      expect(spies[key].calledOnce).to.be.true;
     });
   });
 
@@ -94,7 +93,7 @@ describe('parityOutputProcessor.prototype.postProcess', function() {
       pop.preProcess([req]);
       pop.postProcess([req]);
 
-      assert(spies[key].calledOnce, 'call count for ' + key + ' was ' + spies[key].callCount);
+      expect(spies[key].calledOnce).to.be.true;
     });
   });
 });
@@ -105,7 +104,7 @@ describe('parityOutputProcessor.ethGetTransactionReceipt', function() {
   it('should set obj.result to null if obj.result.blockNumber is falsy', function() {
     var actual = parityOutputProcessor.ethGetTransactionReceipt({ result: {} });
 
-    assert(actual.result === null, 'expected null, got ' + actual.result);
+    expect(actual.result).to.be.null;
   });
 
   it('should return obj unmodified if obj.result.blockNumber is truthy', function() {
@@ -113,6 +112,6 @@ describe('parityOutputProcessor.ethGetTransactionReceipt', function() {
         obj2 = { result: { blockNumber: true } },
         actual = parityOutputProcessor.ethGetTransactionReceipt(obj1);
 
-    assert.deepEqual(obj2, actual, 'expected ' + obj2 + ', got ' + actual);
+    expect(actual).to.deep.equal(obj2);
   });
 });
