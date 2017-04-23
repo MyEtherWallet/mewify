@@ -101,7 +101,7 @@ describe('parityOutputProcessor.prototype.postProcess', function() {
 
 //the below is accessed without 'new' because this method otherwise becomes private
 describe('parityOutputProcessor.ethGetTransactionReceipt', function() {
-  
+
   it('should set obj.result to null if obj.result.blockNumber is falsy', function() {
     var actual = parityOutputProcessor.ethGetTransactionReceipt({ result: {} });
 
