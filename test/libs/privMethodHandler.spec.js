@@ -93,10 +93,9 @@ describe('privMethodHandler.prototype.ethAccounts', function() {
   });
 
   describe('when privMethodHandler.accounts has accounts', function() {
-    var pmh, accountsOriginal;
+    var pmh;
 
     before(function() {
-      accountsOriginal = privMethodHandler.accounts;
       privMethodHandler.accounts = [
         { address: '0x1' },
         { address: '0x3' }
@@ -105,7 +104,7 @@ describe('privMethodHandler.prototype.ethAccounts', function() {
     });
 
     after(function() {
-      privMethodHandler.accounts = accountsOriginal;
+      resetPrivMethodHandler();
     });
 
     it('should return the account addresses in an array', function(done) {
@@ -118,7 +117,6 @@ describe('privMethodHandler.prototype.ethAccounts', function() {
   });
 
   describe('when privMethodHandler.accounts has no accounts', function() {
-
     afterEach(function() {
       fileIO.readAllFiles.reset();
       configs.getKeysPath.reset();
@@ -241,14 +239,12 @@ describe('privMethodHandler.prototype.personalNewAccount', function() {
     });
   });
 
-  describe('when account generation is a failure', function() {
-
+  describe('when a top-level exception is thrown', function() {
     after(function() {
       ethUtil.Wallet.generate.reset();
-      fileIO.writeFile.reset();
     });
 
-    it('should catch top-level errors', function(done) {
+    it('should be caught and passed to the callback', function(done) {
       var pmh = new privMethodHandler();
       ethUtil.Wallet.generate.throws();
       pmh.personalNewAccount([], function(obj) {
@@ -257,8 +253,14 @@ describe('privMethodHandler.prototype.personalNewAccount', function() {
         done();
       });
     });
+  });
 
-    it('should handle an error from fileIO.writeFile', function(done) {
+  describe('when fileIO.writeFile encounters an error', function() {
+    after(function() {
+      fileIO.writeFile.reset();
+    });
+
+    it('should be passed to the callback', function(done) {
       var pmh = new privMethodHandler();
       fileIO.writeFile.yields({error: true});
       pmh.personalNewAccount([], function(obj) {
