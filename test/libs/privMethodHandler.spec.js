@@ -271,3 +271,68 @@ describe('privMethodHandler.prototype.personalNewAccount', function() {
     });
   });
 });
+
+describe('privMethodHandler.prototype.ethCoinbase', function() {
+  describe('when accounts exist', function() {
+    var pmh;
+
+    before(function() {
+      privMethodHandler.accounts = [
+          { address: '0x0' },
+          { address: '0x1' }
+      ];
+      pmh = new privMethodHandler();
+    });
+
+    after(function() {
+      resetPrivMethodHandler();
+    });
+
+    it('should return the first address in the accounts array', function() {
+      pmh.ethCoinbase('', function(obj) {
+        validateCallbackObj(obj);
+        expect(obj.data).to.equal('0x0');
+      });
+    });
+  });
+
+  describe('when accounts do not exist', function() {
+    var pmh, ethAccounts, actual;
+
+    before(function() {
+      ethAccounts = privMethodHandler.prototype.ethAccounts = sinon.stub();
+      pmh = new privMethodHandler();
+      ethAccounts.reset(); //construction calls ethAccounts by default, so necessary to reset
+      ethAccounts.yields({ data: ['0x0', '0x1', '0x2'] });
+      pmh.ethCoinbase('', function(obj) {
+        actual = obj;
+      });
+    });
+
+    after(function() {
+      resetPrivMethodHandler();
+    });
+
+    it('should call ethAccounts to populate accounts', function() {
+      expect(ethAccounts.calledOnce).to.be.true;
+    });
+
+    it('should return the first address in accounts', function() {
+      expect(actual.data).to.equal('0x0');
+    });
+
+    it('should return data in proper callback obj form', function() {
+      validateCallbackObj(actual);
+    });
+
+    it('should handle an error from ethAccounts', function(done) {
+      ethAccounts.reset();
+      ethAccounts.yields({ error: true, msg: 'test'});
+      pmh.ethCoinbase('', function(actual) {
+        expect(actual.error).to.be.true;
+        expect(actual.msg).to.equal('test');
+        done();
+      });
+    });
+  });
+});
