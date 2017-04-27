@@ -10,7 +10,7 @@
   ],
   "main": "app/index.html",
   "scripts": {
-    "test": "mocha",
+    "test": "node test/main",
     "start": "nw .",
     "buildApp": "nwb nwbuild -v 0.19.5-sdk -p win64,osx64,linux64 -o build"
   },
@@ -42,6 +42,7 @@
     "blockies": "0.0.2",
     "browserify": "^13.3.0",
     "chai": "^3.5.0",
+    "chalk": "^1.1.3",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-concat": "^2.6.0",
     "gulp-cssnano": "^2.1.2",
