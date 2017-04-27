@@ -64,10 +64,11 @@
 - Confirm transaction
 
 ## Running Tests
-- Install `mocha` globally:
-	-  `npm install -g mocha`
-- Run test command:
-	- `npm test`
+- To run unit tests:
+	- `npm test unit`
+- To run functional tests:
+  - `npm test functional`
+  - mewify must be open and connected to mainnet
 
 ---
 
