@@ -22,7 +22,9 @@ switch (flavor) {
     break;
   default:
     //TODO: have default behavior run unit then func tests
-    console.log(chalk.bold.red('please select a flavor'));
+    console.log(chalk.bold.red('please tell me which type of tests to run. for example:'));
+    console.log('   npm test functional');
+    console.log('   npm test unit');
     process.exit(1);
 }
 
@@ -38,9 +40,6 @@ fs.readdirSync(testDir)
 //execute the tests
 mocha.run(failures => {
   process.on('exit', () => {
-    if (failures && testType === 'functional') {
-      console.log(chalk.bold.red('do you have mewify started?'))
-    }
     process.exit(failures);
   });
 });
