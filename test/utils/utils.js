@@ -19,9 +19,6 @@ utils.generateRequestOptions = (o) => {
   return options;
 }
 
-utils.isValidHexResponse = (str) => {
-  return /^0x[0-9A-F]+$/i.test(str);
-}
-
+utils.isValidHexResponse = str => /^0x[0-9A-F]+$/i.test(str);
 
 module.exports = utils;
