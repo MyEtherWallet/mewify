@@ -140,18 +140,19 @@ describe('watcher rpc methods', function(){
             });
 
             if (doneCalled) return;
-            return request(options, (err, res, body) => {
+            request(options, (err, res, body) => {
               if (doneCalled) return;
+
               if (err) throw err;
               let results = JSON.parse(body);
               if (results.error) throw new Error(results.error);
 
               if (!results.result.length) return;
-              doneCalled = true;
 
+              doneCalled = true;
               result = results.result;
               clearInterval(polling);
-              return done();
+              done();
             });
           }, 3000)
         });
@@ -164,7 +165,6 @@ describe('watcher rpc methods', function(){
       it('should return an array with some length', () => {
         expect(result).to.be.an('array');
         expect(result).to.have.length.of.at.least(1);
-        // expect( isValidHex(result) ).to.be.true;
       });
 
     });
@@ -185,21 +185,19 @@ describe('watcher rpc methods', function(){
 
             if (doneCalled) return;
 
-            return request(options, (err, res, body) => {
+            request(options, (err, res, body) => {
               if (doneCalled) return;
 
               if (err) throw err;
               let results = JSON.parse(body);
               if (results.error) throw new Error(results.error);
 
-              // console.log(results);
-
               if (!results.result.length) return;
-              doneCalled = true;
 
+              doneCalled = true;
               result = results.result;
               clearInterval(polling);
-              return done();
+              done();
             });
           }, 3000)
         });
@@ -212,7 +210,6 @@ describe('watcher rpc methods', function(){
       it('should return an array with some length', () => {
         expect(result).to.be.an('array');
         expect(result).to.have.length.of.at.least(1);
-        // expect( isValidHex(result) ).to.be.true;
       });
     });
   });
