@@ -11,29 +11,33 @@ let path        = require('path'),
     snapKeys    = Object.keys(snapshots);
 
 
-snapKeys.forEach(md5Key => {
-  let snapshot = snapshots[md5Key];
+describe('static rpc methods', function() {
+  this.timeout(10000);
 
-  describe(snapshot.options.method, function() {
-    let options = genReqOpts(snapshot.options),
-        results, error;
+  snapKeys.forEach(md5Key => {
+    let snapshot = snapshots[md5Key];
 
-    before(done => {
-      request(options, (err, res, body) => {
-        results = JSON.parse(body);
-        error = err;
-        done();
+    describe(snapshot.options.method, function() {
+      let options = genReqOpts(snapshot.options),
+          results, error;
+
+      before(done => {
+        request(options, (err, res, body) => {
+          results = JSON.parse(body);
+          error = err;
+          done();
+        });
       });
-    });
 
-    it('should not error', () => {
-      expect(error).to.be.null;
-      expect(results).to.not.have.property('error');
-    });
+      it('should not error', () => {
+        expect(error).to.be.null;
+        expect(results).to.not.have.property('error');
+      });
 
-    it('should be exactly the same as the static file', () => {
-      expect(results).to.deep.equal(snapshot.results);
-      expect(JSON.stringify(results)).to.equal(JSON.stringify(snapshot.results));
+      it('should be exactly the same as the static file', () => {
+        expect(results).to.deep.equal(snapshot.results);
+        expect(JSON.stringify(results)).to.equal(JSON.stringify(snapshot.results));
+      });
     });
   });
 });
