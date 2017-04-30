@@ -10,184 +10,188 @@ let path        = require('path'),
     isValidHex  = utils.isValidHexResponse;
 
 
-describe('web3_clientVersion', function() {
-  let options = genReqOpts({ method: 'web3_clientVersion' }),
-      error, results;
+describe('dynamic rpc methods', function() {
+  this.timeout(10000);
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+  describe('web3_clientVersion', function() {
+    let options = genReqOpts({ method: 'web3_clientVersion' }),
+        error, results;
+
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
+
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
+
+    it('should return a result with some length', () => {
+      expect(results.result).to.have.length.of.at.least(1);
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
 
-  it('should return a result with some length', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-  });
-});
+  describe('net_peerCount', function() {
+    let options = genReqOpts({ method: 'net_peerCount' }),
+        error, results;
 
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
 
-describe('net_peerCount', function() {
-  let options = genReqOpts({ method: 'net_peerCount' }),
-      error, results;
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    it('should return a result with valid hex', () => {
+      expect(results.result).to.have.length.of.at.least(1);
+      expect( isValidHex(results.result) ).to.be.true;
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
 
-  it('should return a result with valid hex', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-    expect( isValidHex(results.result) ).to.be.true;
-  });
-});
+  describe('eth_gasPrice', function() {
+    let options = genReqOpts({ method: 'eth_gasPrice' }),
+        error, results;
 
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
 
-describe('eth_gasPrice', function() {
-  let options = genReqOpts({ method: 'eth_gasPrice' }),
-      error, results;
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    it('should return a result with valid hex', () => {
+      expect(results.result).to.have.length.of.at.least(1);
+      expect( isValidHex(results.result) ).to.be.true;
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
 
-  it('should return a result with valid hex', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-    expect( isValidHex(results.result) ).to.be.true;
-  });
-});
+  describe('eth_blockNumber', function() {
+    let options = genReqOpts({ method: 'eth_blockNumber' }),
+        error, results;
 
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
 
-describe('eth_blockNumber', function() {
-  let options = genReqOpts({ method: 'eth_blockNumber' }),
-      error, results;
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    it('should return a result with valid hex', () => {
+      expect(results.result).to.have.length.of.at.least(1);
+      expect( isValidHex(results.result) ).to.be.true;
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
 
-  it('should return a result with valid hex', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-    expect( isValidHex(results.result) ).to.be.true;
-  });
-});
+  //TODO: test all params[1] permutations
+  describe('eth_getBalance', function() {
+    let options, error, results;
 
+    options = genReqOpts({
+      method: 'eth_getBalance',
+      params: [
+        "0xb794F5eA0ba39494cE839613fffBA74279579268",
+        "latest"
+      ]
+    });
 
-//TODO: test all params[1] permutations
-describe('eth_getBalance', function() {
-  let options, error, results;
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
 
-  options = genReqOpts({
-    method: 'eth_getBalance',
-    params: [
-      "0xb794F5eA0ba39494cE839613fffBA74279579268",
-      "latest"
-    ]
-  });
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    it('should return a result with valid hex', () => {
+      expect(results.result).to.have.length.of.at.least(1);
+      expect( isValidHex(results.result) ).to.be.true;
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
 
-  it('should return a result with valid hex', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-    expect( isValidHex(results.result) ).to.be.true;
-  });
-});
+  //TODO: test all params[1] permutations
+  describe('eth_getTransactionCount', function() {
+    let options, error, results;
 
+    options = genReqOpts({
+      method: 'eth_getTransactionCount',
+      params: [
+        "0xb794F5eA0ba39494cE839613fffBA74279579268",
+        "latest"
+      ]
+    });
 
-//TODO: test all params[1] permutations
-describe('eth_getTransactionCount', function() {
-  let options, error, results;
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
+    });
 
-  options = genReqOpts({
-    method: 'eth_getTransactionCount',
-    params: [
-      "0xb794F5eA0ba39494cE839613fffBA74279579268",
-      "latest"
-    ]
-  });
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    it('should return a result with valid hex', () => {
+      expect(results.result).to.have.length.of.at.least(1);
+      expect( isValidHex(results.result) ).to.be.true;
     });
   });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
-
-  it('should return a result with valid hex', () => {
-    expect(results.result).to.have.length.of.at.least(1);
-    expect( isValidHex(results.result) ).to.be.true;
-  });
-});
 
 
+  describe('net_listening', function() {
+    let options = genReqOpts({ method: 'net_listening' }),
+        error, results;
 
-describe('net_listening', function() {
-  let options = genReqOpts({ method: 'net_listening' }),
-      error, results;
-
-  before(done => {
-    request(options, (err, res, body) => {
-      results = JSON.parse(body);
-      error = err;
-      done();
+    before(done => {
+      request(options, (err, res, body) => {
+        results = JSON.parse(body);
+        error = err;
+        done();
+      });
     });
-  });
 
-  it('should not error', () => {
-    expect(error).to.be.null;
-    expect(results).to.not.have.property('error');
-  });
+    it('should not error', () => {
+      expect(error).to.be.null;
+      expect(results).to.not.have.property('error');
+    });
 
-  it('should return a boolean', () => {
-    expect(typeof results.result).to.equal('boolean');
+    it('should return a boolean', () => {
+      expect(typeof results.result).to.equal('boolean');
+    });
   });
 });

@@ -127,7 +127,7 @@ describe('watcher rpc methods', function(){
 
     describe('eth_getFilterChanges', function() {
       let result;
-      this.timeout(50000)
+      this.timeout(120000)
 
       before(done => {
         let doneCalled;
