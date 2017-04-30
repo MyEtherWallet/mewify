@@ -3,43 +3,46 @@ let fs      = require('fs'),
     Mocha   = require('mocha'),
     chalk   = require('chalk'),
     mocha   = new Mocha(),
-    flavor  = process.argv[2],
-    testType, testDir;
+    flavor  = process.argv[2];
 
-//determine the tests
+let unitTestsPath = path.resolve(__dirname + '/unit'),
+    functionalTestsPath = path.resolve(__dirname + '/functional'),
+    errorCount = 0;
+
+//determine which tests to run
 switch (flavor) {
   case 'functional':
-  case 'func':
   case 'f':
-    testType = 'functional';
-    testDir = path.resolve('test/functional');
+    addTestsToMocha(functionalTestsPath);
     break;
   case 'unit':
-  case 'uni':
   case 'u':
-    testType = 'unit';
-    testDir = path.resolve('test/unit');
+    addTestsToMocha(unitTestsPath);
+    break;
+  case 'all':
+  case 'a':
+    addTestsToMocha(unitTestsPath);
+    addTestsToMocha(functionalTestsPath);
     break;
   default:
-    //TODO: have default behavior run unit then func tests
     console.log(chalk.bold.red('please tell me which type of tests to run. for example:'));
     console.log('   npm test functional');
     console.log('   npm test unit');
+    console.log('   npm test all');
     process.exit(1);
 }
 
-//locate the tests
-fs.readdirSync(testDir)
-  .filter(file => file.substr(-8) === '.spec.js')
-  .forEach(file => {
-    mocha.addFile(
-      path.join(testDir, file)
-    );
-  });
+function addTestsToMocha(folderPath) {
+  fs.readdirSync(folderPath)
+    .filter(file => file.substr(-8) === '.spec.js')
+    .forEach(file => {
+      mocha.addFile(
+        path.join(folderPath, file)
+      );
+    });
+}
 
-//execute the tests
-mocha.run(failures => {
-  process.on('exit', () => {
-    process.exit(failures);
-  });
-});
+//run the tests, exit on completion
+mocha.run()
+  .on('fail', () => errorCount++)
+  .on('end', () => process.exit(errorCount));
