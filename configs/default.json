@@ -36,6 +36,7 @@
         "blockExplorerAddr": "https://gastracker.io/addr/[[address]]"
     }],
     "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}",
+    "serverErrorTimeout": 10000,
     "cachedMethods": {
       "eth_getFilterChanges": {
           "timeout": 10000,
