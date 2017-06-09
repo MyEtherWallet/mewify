@@ -65,6 +65,12 @@
 - Enter **correct** password in Mewify
 - Confirm transaction
 
+## Running Tests
+- To run unit tests:
+	- `npm test unit`
+- To run functional tests:
+  - `npm test functional`
+  - mewify must be open and connected to mainnet
 
 ## Contact Us
 - Created & Maintained by [kvhnuke](https://github.com/kvhnuke) and [tayvano](https://github.com/tayvano)
