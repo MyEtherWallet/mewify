@@ -1,20 +1,28 @@
 var Promise = require('bluebird');
 
-var config, queue, cache, server, request, 
+var config, cache, server, request, globalQueue, globalErrorQueue, errorHashes,
     serverInterval, reporterInterval, reporter;
 
 exports.init = function(_server) {
   request = netIO.request.defaults({ jar: true });
   config  = configs.default.rpcRateLimit;
   server  = _server;
-  cache   = {},
-  queue   = [];
+  cache   = {};
+
+  globalQueue = [];
+  globalErrorQueue = [];
+  errorHashes = {};
 
   //init server interval
   if (serverInterval) clearInterval(serverInterval);
   serverInterval = setInterval(function() {
-    serverTick();
+    processQueue(Array.from(globalQueue));
+    globalQueue = [];
+
+    processErrorQueue(Array.from(globalErrorQueue));
+    globalErrorQueue = [];
   }, config.serverInterval);
+
 
   //init reporter interval
   if (reporterInterval) clearInterval(reporterInterval);
@@ -24,7 +32,7 @@ exports.init = function(_server) {
       reporter.report();
     }, config.reporterInterval)
   }
-}
+};
 
 exports.processRequest = function(body, callback) {
   var originallyArray = false,
@@ -37,28 +45,51 @@ exports.processRequest = function(body, callback) {
     promises.push(processRpcMethod(req));
   });
 
-  Promise.all(promises).then(function(results) { 
-    if (reporter) reporter.requestFinished(results);
-    if (!originallyArray && results.length === 1) {
-      results = results[0];
-    }
-    callback(null, null, results);
-  });
-
   if (reporter) reporter.requestReceived(body);
-}
+
+  Promise
+    .all(promises)
+    .then(function(results) { 
+      if (reporter) reporter.requestFinished(results);
+
+      var requestError, serverError;
+
+      results.forEach(function(result) {  
+        if (result.requestError) requestError = true;
+        if (result.serverError) serverError = true;
+      });
+
+      if (requestError) {
+        console.log('processRequest - request error detected');
+        return callback(true, null, null);
+      }
+      if (serverError) {
+        console.log('processRequest - server error detected');
+        return callback(false, null, { message: 'Internal server error' });
+      }
+
+      if (!originallyArray && results.length === 1) {
+        results = results[0];
+      }
+      callback(null, null, results);
+    })
+};
 
 
 function processRpcMethod(req) {
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
+    var reqHash     = calcHashFromReq(req),
+        originalId  = req.id,
+        params;
 
     if (isMethodThrottled(req.method)) {
       var now     = (new Date()).getTime(),
-          reqHash = calcHashFromReq(req),
           cached  = cache[reqHash],
           resp;
 
       if (cached && now < cache.timeout) {
+        if (cached.serverError) return resolve({ serverError: true });
+
         resp = Object.assign({}, cached.resp, { id: req.id });
         resolve(resp);
         return;
@@ -66,44 +97,47 @@ function processRpcMethod(req) {
 
       if (cached && cached.pending) {
         cached.promises.push({
-          originalId: req.id,
-          resolve: resolve
+          originalId  : req.id,
+          resolve     : resolve,
+          reject      : reject
         });
         return;
       }
 
       cache[reqHash] = {
-        pending: true,
+        pending : true,
         promises: []        
       }
     }
 
-    var originalId = req.id;
     req.id = generateUUID();
-    queue.push({
+    params = {
       originalId  : originalId,
       req         : req,
-      resolve     : resolve
-    });
+      resolve     : resolve,
+      reject      : reject
+    }
+
+    if (errorHashes[reqHash]) {
+      globalErrorQueue.push(params);
+    }
+    else {
+      globalQueue.push(params);
+    }
   });
 }
 
 
-function serverTick() {
+function processQueue(queue) {
+  if (!queue.length) return;
 
-  if (!queue.length) return console.log('no requests in queue');
-
-  var localQueue = Array.from(queue),
-      localQueueMappedById = {},
+  var queueMappedById = {},
       reqBody = [];
   
-  queue = [];
-
-  localQueue.forEach(function(params) {
-    localQueueMappedById[params.req.id] = params;
+  queue.forEach(function(params) {
+    queueMappedById[params.req.id] = params;
     reqBody.push(params.req);
   });
-
 
   if (reporter) reporter.requestSent(reqBody);
 
@@ -113,43 +147,78 @@ function serverTick() {
     json    : true,
     body    : reqBody
   }, 
-  function(error, response, body) {
-    var failed = false;
+  function(error, response, resBody) {
+    //detect network error
+    if (error)  {
+      queue.forEach(function(params) {
+        cacheResponseFailure(params.req, true, false);
+        params.resolve({ requestError: true });
+      });
 
-    //detect errors 
-    if (error) {
-      failed = true;
-    } else if (!body || !body.length || body.length !== reqBody.length) {
-      failed = true;
-    } else if (body.message && body.message === 'Internal server error') {
-      failed = true;
-    } 
-    if (failed) return handleServerFailure();
+    //detect incorrect response
+    } else if (!isValidServerReponseBody(reqBody, resBody)) {
+      console.log('Invalid RPC response. Attempting to resolve...');
+      globalErrorQueue = globalErrorQueue.concat(queue);
 
-    //handle success
-    body.forEach(function(res) {
-      var queue = localQueueMappedById[res.id];
-      res.id = queue.originalId;
-      cacheResponse(queue.req, res);
-      queue.resolve(res);
-    });
-  });
-
-  function handleServerFailure() {
-    queue = localQueue.concat(queue);
-  }
+    //success
+    } else {
+      resBody.forEach(function(res) {
+        var queue = queueMappedById[res.id];
+        res.id = queue.originalId;
+        cacheResponseSuccess(queue.req, res);
+        queue.resolve(res);
+      });
+    }
+  }); 
 }
 
+function processErrorQueue(errorQueue) {
+  if (!errorQueue.length) return;
 
-function cacheResponse(req, res) {
+  errorQueue.forEach(function(params) {
+    var reqHash = calcHashFromReq(params.req);
+
+    if (reporter) reporter.requestSent([params.req]);
+    
+    request({
+      url     : server,
+      method  : "POST",
+      json    : true,
+      body    : params.req
+    },
+    function(error, response, resBody) {
+      //detect network error
+      if (error) {
+        cacheResponseFailure(params.req, true, false);
+        params.resolve({ requestError: true });
+      
+      //detect incorrect response
+      } else if (!isValidServerReponseBody(params.req, resBody)) {
+        errorHashes[reqHash] = true;
+        cacheResponseFailure(params.req, false, true);
+        params.resolve({ serverError: true });
+
+      //success
+      } else {
+        if (errorHashes[reqHash]) delete errorHashes[reqHash];
+        cacheResponseSuccess(params.req, resBody);
+        resBody.id = params.originalId;
+        params.resolve(resBody);
+      }
+    });
+  });
+}
+
+function cacheResponseSuccess(req, res) {
   if (!isMethodThrottled(req.method)) return;
+
   var now     = (new Date()).getTime(),
       reqHash = calcHashFromReq(req),
       cached  = cache[reqHash];
 
   if (cached) {
     cached.promises.forEach(function(obj) {
-      res = Object.assign({}, res, { id: obj.originalId })
+      res = Object.assign({}, res, { id: obj.originalId });
       obj.resolve(res);
     });
   }
@@ -160,9 +229,29 @@ function cacheResponse(req, res) {
   }
 }
 
+function cacheResponseFailure(req, reqError, serverError) {
+  if (!isMethodThrottled(req.method)) return;
+  var now     = (new Date()).getTime(),
+      reqHash = calcHashFromReq(req),
+      cached  = cache[reqHash];
+
+  if (cached) {
+    cached.promises.forEach(function(obj) {
+      if (reqError) obj.resolve({ requestError: true });
+      else obj.resolve({ serverError: true });
+    });
+  }
+
+  if (serverError) {
+    cache[reqHash] = {
+      timeout     : now + getMethodTimeout(req.method),
+      response    : null,
+      serverError : true
+    }
+  }
+}
 
 function Reporter() {
-
   var receivedNetworkRequests = 0,
       receivedRpcRequests = 0,
       receivedNetworkRpm = [],
@@ -200,7 +289,7 @@ function Reporter() {
     sentRpcRpm = sentRpcRpm
       .filter(oneMinute);
 
-    msg += 'Recieved From Clients\n';
+    msg += 'Received From Clients\n';
     msg += '  network rpm    : ' + receivedNetworkRpm.length + '\n';
     msg += '  network total  : ' + receivedNetworkRequests + '\n';
     msg += '  network finish : ' + finishedNetworkRequests + '\n';
@@ -225,7 +314,7 @@ function Reporter() {
     receivedNetworkRequests++;
     receivedNetworkRpm.push(now);
 
-    bodyArr.forEach(function(req) {
+    bodyArr.forEach(function(/*req*/) {
       receivedRpcRequests++;
       receivedRpcRpm.push(now);
     });
@@ -247,14 +336,27 @@ function Reporter() {
     finishedNetworkRequests++;
     finishedRpcRequests += bodyArr.length;
   }
-
-
 }
 
 
 /**
  * HELPERS
  */
+
+function isValidServerReponseBody(reqBody, resBody) {
+    var isValid = true; 
+    if (!resBody || resBody.length !== reqBody.length) {
+      console.log('Invalid RPC response: ', resBody);
+      isValid = false;
+    } else if (resBody.message && resBody.message === 'Internal server error') {
+      console.log('Invalid RPC response: ', resBody);
+      isValid = false;
+    } else if (resBody.errorMessage && resBody.errorMessage === "Cannot read property 'headers' of undefined") {
+      console.log('Invalid RPC response: ', resBody);
+      isValid = false;
+    }
+    return isValid;
+}
 
 function calcHashFromReq(req) {
   var options = { method: req.method, params: req.params };
