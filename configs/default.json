@@ -36,31 +36,12 @@
         "blockExplorerAddr": "https://gastracker.io/addr/[[address]]"
     }],
     "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}",
-    "serverErrorTimeout": 10000,
-    "cachedMethods": {
-      "eth_getFilterChanges": {
-          "timeout": 10000,
-          "response": "cache"
-      },
-      "eth_call": {
-          "timeout": 10000,
-          "response": "cache"
-      },
-      "eth_getBalance": {
-          "timeout": 10000,
-          "response": "cache"
-      },
-      "eth_syncing": {
-          "timeout": 60000,
-          "response": "cache"
-      },
-      "net_peerCount": {
-          "timeout": 60000,
-          "response": "cache"
-      },
-      "eth_gasPrice": {
-          "timeout": 60000,
-          "response": "cache"
-      }
+    "rpcRateLimit": {
+        "reporter": false,
+        "reporterInterval": 5000,
+        "serverInterval": 1000,
+        "priorityMethods": [
+            "eth_newBlockFilter"
+        ]
     }
 }
