@@ -13,7 +13,7 @@ exports.init = function(_server) {
   globalErrorQueue = [];
   errorHashes = {};
 
-  //init server interval
+  //init server intervals
   if (serverInterval) clearInterval(serverInterval);
   serverInterval = setInterval(function() {
     processQueue(Array.from(globalQueue));
@@ -71,29 +71,22 @@ exports.processRequest = function(body, callback) {
       if (!originallyArray && results.length === 1) {
         results = results[0];
       }
-      callback(null, null, results);
+      return callback(null, null, results);
     })
 };
 
 
 function processRpcMethod(req) {
   return new Promise(function(resolve, reject) {
-    var reqHash     = calcHashFromReq(req),
-        originalId  = req.id,
+    req = Object.assign({}, req);
+
+    var reqHash    = calcHashFromReq(req),
+        originalId = req.id,
+        cached     = cache[reqHash],
+        priority   = false,
         params;
 
-    if (isMethodThrottled(req.method)) {
-      var now     = (new Date()).getTime(),
-          cached  = cache[reqHash],
-          resp;
-
-      if (cached && now < cache.timeout) {
-        if (cached.serverError) return resolve({ serverError: true });
-
-        resp = Object.assign({}, cached.resp, { id: req.id });
-        resolve(resp);
-        return;
-      }
+    if (isMethodPriority(req.method)) priority = true;
 
       if (cached && cached.pending) {
         cached.promises.push({
@@ -104,11 +97,12 @@ function processRpcMethod(req) {
         return;
       }
 
-      cache[reqHash] = {
-        pending : true,
-        promises: []        
+      if (!priority) {
+        cache[reqHash] = {
+          pending : true,
+          promises: []        
+        }
       }
-    }
 
     req.id = generateUUID();
     params = {
@@ -172,6 +166,8 @@ function processQueue(queue) {
   }); 
 }
 
+
+//process requests in ErrorQueue
 function processErrorQueue(errorQueue) {
   if (!errorQueue.length) return;
 
@@ -193,13 +189,13 @@ function processErrorQueue(errorQueue) {
         params.resolve({ requestError: true });
       
       //detect incorrect response
-      } else if (!isValidServerReponseBody(params.req, resBody)) {
+      } else if (!isValidServerReponseBody(params.req, resBody)) { 
         errorHashes[reqHash] = true;
         cacheResponseFailure(params.req, false, true);
         params.resolve({ serverError: true });
 
       //success
-      } else {
+    } else {
         if (errorHashes[reqHash]) delete errorHashes[reqHash];
         cacheResponseSuccess(params.req, resBody);
         resBody.id = params.originalId;
@@ -210,10 +206,7 @@ function processErrorQueue(errorQueue) {
 }
 
 function cacheResponseSuccess(req, res) {
-  if (!isMethodThrottled(req.method)) return;
-
-  var now     = (new Date()).getTime(),
-      reqHash = calcHashFromReq(req),
+  var reqHash = calcHashFromReq(req),
       cached  = cache[reqHash];
 
   if (cached) {
@@ -223,16 +216,11 @@ function cacheResponseSuccess(req, res) {
     });
   }
 
-  cache[reqHash] = {
-    timeout   : now + getMethodTimeout(req.method),
-    response  : res
-  }
+  delete cache[reqHash];
 }
 
 function cacheResponseFailure(req, reqError, serverError) {
-  if (!isMethodThrottled(req.method)) return;
-  var now     = (new Date()).getTime(),
-      reqHash = calcHashFromReq(req),
+  var reqHash = calcHashFromReq(req),
       cached  = cache[reqHash];
 
   if (cached) {
@@ -244,8 +232,6 @@ function cacheResponseFailure(req, reqError, serverError) {
 
   if (serverError) {
     cache[reqHash] = {
-      timeout     : now + getMethodTimeout(req.method),
-      response    : null,
       serverError : true
     }
   }
@@ -326,7 +312,7 @@ function Reporter() {
     sentNetworkRequests++;
     sentNetworkRpm.push(now);
 
-    bodyArr.forEach(function(req) {
+    bodyArr.forEach(function(/*req*/) {
       sentRpcRequests++;
       sentRpcRpm.push(now);
     });
@@ -366,13 +352,12 @@ function calcHashFromReq(req) {
     .digest('hex');
 }
 
-function isMethodThrottled(method) {
-  return Object.keys(configs.default.rpcRateLimit.cachedMethods).indexOf(method) !== -1;
+
+function isMethodPriority(method) {
+  var priorityMethods = configs.default.rpcRateLimit.priorityMethods;
+  return (priorityMethods.indexOf(method) !== -1)
 }
 
-function getMethodTimeout(method) {
-  return configs.default.rpcRateLimit.cachedMethods[method].timeout;
-}
 
 //https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function generateUUID () { // Public Domain/MIT
