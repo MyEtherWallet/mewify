@@ -4,7 +4,7 @@ var config, cache, server, request, globalQueue, globalErrorQueue, errorHashes,
     serverInterval, reporterInterval, reporter;
 
 exports.init = function(_server) {
-  request = netIO.request.defaults({ jar: true });
+  request = netIO.request.defaults({ jar: true, headers : { origin: 'mewify' } });
   config  = configs.default.rpcRateLimit;
   server  = _server;
   cache   = {};
