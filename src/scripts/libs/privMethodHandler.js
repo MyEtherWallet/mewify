@@ -119,7 +119,12 @@ privMethodHandler.prototype.signAndSendTransaction = function(params, callback) 
                             params[0].nonce = data.result;
                             params[0].chainId = configs.getNodeChainId();
                             var tx = new ethUtil.Tx(params[0]);
-                            var tempTx = { to: params[0].to, from: params[0].from, value: etherUnits.toEther(params[0].value, 'wei'), pass: params[1] };
+                            var tempTx = { 
+                                to      : params[0].to, 
+                                from    : params[0].from, 
+                                value   : params[0].value ? etherUnits.toEther(params[0].value, 'wei') : '0.00', 
+                                pass    : params[1] 
+                            };
                             angularApprovalHandler.showTxConfirm(tempTx, function(data) {
                                 if (data.error) callback(data);
                                 else {
