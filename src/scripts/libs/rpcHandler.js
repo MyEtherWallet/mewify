@@ -29,9 +29,9 @@ rpcHandler.prototype.sendResponse = function(req) {
             }
         }
     } else if (req.method && !rpcHandler.isAllowedMethod(req.method)) {
-        this.write(rpcHandler.getInvalidMethod(req.method, req.id));
+        return this.write(rpcHandler.getInvalidMethod(req.method, req.id));
     } else if (!req.method) {
-        this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
+        return this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
     }
     if (Array.isArray(req)) {
         if (req.length)
