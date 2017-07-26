@@ -1,22 +1,19 @@
 "use strict";
 var parityOutputProcessor = require('./parityOutputProcessor');
+var rpcRateLimiter = require('./rpcRateLimiter');
 var rpcClient = function(server) {
     this.server = server;
-    this.request = netIO.request.defaults({ jar: true });
     this.parityOutputProcessor = new parityOutputProcessor();
+
+    rpcRateLimiter.init(server);
 }
+
 rpcClient.prototype.call = function(body, retries, callback) {
-    console.log(body);
-    var _this = this;
-    _this.request({
-        url: _this.server,
-        method: "POST",
-        json: true,
-        body: body
-    }, function(error, response, body) {
-        callback(error, response, body, retries);
+    rpcRateLimiter.processRequest(body, function(error, response, body) {
+      callback(error, response, body, retries);
     });
 }
+
 rpcClient.prototype.getResponse = function(body, callback) {
     var _this = this;
     var _body = body;
@@ -37,4 +34,6 @@ rpcClient.prototype.getResponse = function(body, callback) {
     };
     _this.call(body, 0, resHandler);
 }
+
+
 module.exports = rpcClient;

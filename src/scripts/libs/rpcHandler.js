@@ -4,13 +4,27 @@ var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
     this.privMethodHandler = new privMethodHandler(server);
+
+    this.httpResponseQueue = [];
+    this.reqIsArr = false;
+    this.reqLength = 0;
 }
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
     var _this = this;
     if (Array.isArray(req)) {
+
+        if (_this.client.connType === 'http') {
+            _this.reqIsArr = true;
+            _this.reqLength = req.length;
+        }
+
         isArray = true;
         for (var i in req) {
+            if (req[i].method && rpcHandler.isFrozenMethod(req[i].method)) {
+                this.write(rpcHandler.getFrozenMethod(req[i].method, req[i].id));
+                req.splice(i, 1);
+            }
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
@@ -28,10 +42,12 @@ rpcHandler.prototype.sendResponse = function(req) {
                 req.splice(i, 1);
             }
         }
+    } else if (req.method && rpcHandler.isFrozenMethod(req.method, req.id)) {
+        return this.write(rpcHandler.getFrozenMethod(req.method, req.id))
     } else if (req.method && !rpcHandler.isAllowedMethod(req.method)) {
-        this.write(rpcHandler.getInvalidMethod(req.method, req.id));
+        return this.write(rpcHandler.getInvalidMethod(req.method, req.id));
     } else if (!req.method) {
-        this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
+        return this.write(rpcHandler.getInvalidMethod('Invalid number of input parameters', req.id));
     }
     if (Array.isArray(req)) {
         if (req.length)
@@ -56,8 +72,17 @@ rpcHandler.prototype.sendResponse = function(req) {
 rpcHandler.prototype.write = function(data) {
     var _this = this;
     if (_this.client.connected) {
-        if (_this.client.connType == "ipc") _this.client.write(JSON.stringify(data));
-        else if (_this.client.connType == "http") _this.client.json(data);
+        if (_this.client.connType === "ipc") {
+            _this.client.write(JSON.stringify(data));
+        }
+        else if (_this.client.connType === "http") {
+            if (!_this.reqIsArr) return _this.client.json(data);
+            if (!Array.isArray(data)) data = [data];
+            _this.httpResponseQueue = _this.httpResponseQueue.concat(data);
+            if (_this.reqLength === _this.httpResponseQueue.length) {
+                _this.client.json(_this.httpResponseQueue);
+            }
+        }
     }
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
@@ -77,6 +102,16 @@ rpcHandler.isPrivMethod = function(method) {
 rpcHandler.isAllowedMethod = function(method) {
     return rpcHandler.remoteMethods.indexOf(method) > -1 || rpcHandler.isPrivMethod(method);
 }
+rpcHandler.isFrozenMethod = function(method) {
+    return Object.keys(rpcHandler.frozenMethods).indexOf(method) !== -1;
+}
+rpcHandler.getFrozenMethod = function(method, id) {
+    console.log('getFrozenMethod: ' + method);
+    var resp = JSON.parse(rpcHandler.frozenMethods[method]);
+    resp.id = id;
+    return resp;
+}
 rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
+rpcHandler.frozenMethods = require('./methods/frozenMethods.json');
 module.exports = rpcHandler;
