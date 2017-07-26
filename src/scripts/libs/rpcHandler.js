@@ -21,6 +21,10 @@ rpcHandler.prototype.sendResponse = function(req) {
 
         isArray = true;
         for (var i in req) {
+            if (req[i].method && rpcHandler.isFrozenMethod(req[i].method)) {
+                this.write(rpcHandler.getFrozenMethod(req[i].method, req[i].id));
+                req.splice(i, 1);
+            }
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
                 this.write(rpcHandler.getInvalidMethod(req[i].method, req[i].id));
                 req.splice(i, 1);
@@ -38,6 +42,8 @@ rpcHandler.prototype.sendResponse = function(req) {
                 req.splice(i, 1);
             }
         }
+    } else if (req.method && rpcHandler.isFrozenMethod(req.method, req.id)) {
+        return this.write(rpcHandler.getFrozenMethod(req.method, req.id))
     } else if (req.method && !rpcHandler.isAllowedMethod(req.method)) {
         return this.write(rpcHandler.getInvalidMethod(req.method, req.id));
     } else if (!req.method) {
@@ -96,6 +102,16 @@ rpcHandler.isPrivMethod = function(method) {
 rpcHandler.isAllowedMethod = function(method) {
     return rpcHandler.remoteMethods.indexOf(method) > -1 || rpcHandler.isPrivMethod(method);
 }
+rpcHandler.isFrozenMethod = function(method) {
+    return Object.keys(rpcHandler.frozenMethods).indexOf(method) !== -1;
+}
+rpcHandler.getFrozenMethod = function(method, id) {
+    console.log('getFrozenMethod: ' + method);
+    var resp = JSON.parse(rpcHandler.frozenMethods[method]);
+    resp.id = id;
+    return resp;
+}
 rpcHandler.remoteMethods = require('./methods/remoteMethods.json');
 rpcHandler.privMethods = require('./methods/privMethods.json');
+rpcHandler.frozenMethods = require('./methods/frozenMethods.json');
 module.exports = rpcHandler;
