@@ -4,11 +4,21 @@ var rpcHandler = function(client, server) {
     this.client = client;
     this.server = server;
     this.privMethodHandler = new privMethodHandler(server);
+
+    this.httpResponseQueue = [];
+    this.reqIsArr = false;
+    this.reqLength = 0;
 }
 rpcHandler.prototype.sendResponse = function(req) {
     var isArray = false;
     var _this = this;
     if (Array.isArray(req)) {
+
+        if (_this.client.connType === 'http') {
+            _this.reqIsArr = true;
+            _this.reqLength = req.length;
+        }
+
         isArray = true;
         for (var i in req) {
             if (req[i].method && !rpcHandler.isAllowedMethod(req[i].method)) {
@@ -56,8 +66,17 @@ rpcHandler.prototype.sendResponse = function(req) {
 rpcHandler.prototype.write = function(data) {
     var _this = this;
     if (_this.client.connected) {
-        if (_this.client.connType == "ipc") _this.client.write(JSON.stringify(data));
-        else if (_this.client.connType == "http") _this.client.json(data);
+        if (_this.client.connType === "ipc") {
+            _this.client.write(JSON.stringify(data));
+        }
+        else if (_this.client.connType === "http") {
+            if (!_this.reqIsArr) return _this.client.json(data);
+            if (!Array.isArray(data)) data = [data];
+            _this.httpResponseQueue = _this.httpResponseQueue.concat(data);
+            if (_this.reqLength === _this.httpResponseQueue.length) {
+                _this.client.json(_this.httpResponseQueue);
+            }
+        }
     }
 }
 rpcHandler.getInvalidMethod = function(methodName, id) {
