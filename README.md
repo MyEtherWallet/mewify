@@ -1,10 +1,10 @@
 ## Mewify: No more syncing the chain.
 ##### A project by MyEtherWallet.
 
-
+---
 
 ## Warnings
-- **This is a brand-spanking-new project and is currently in ALPHA. Use at your own risk. Do not expect it to work.**
+- **This is a brand-spanking-new. It doesn't work all the time.**
 - Please do not place any keys with larges amounts into your new mewify keystore folder for the time being.
 - Windows builds are hard. Please join our Slack to get assistance. 
 
@@ -24,7 +24,7 @@
         - I tried to send a transaction and it died.
         - I successfully sent a transaction but now my computer turned into a dragon and attacked me. Here is the TX ID as a link to etherscan.io because even though I'm being attacked by a rabid computer-dragon, I still understand how much easier it makes your life when I give you links.
 
-
+---
 
 ## Getting up and running
 - Install Node (w/ npm)
@@ -54,7 +54,6 @@
 - In order to use your existing keys, copy and paste them to the key folder that is shown under "Keystore Location" in Mewify. They should now show up in Mist/EW.
 - **Note: Please don't move big keys into this folder, or change to use your default keystore folder further testing has been done.**
 
-
 ## Interacting with Dapps in Chrome (? does this work ?)
 - Get it up and running (see above)
 - Open that page in Chrome
@@ -80,10 +79,6 @@
 
 ---
 
-**Disclaimer**
-
-- [Be safe & secure](https://myetherwallet.groovehq.com/knowledge_base/topics/protecting-yourself-and-your-funds) We highly recommend that you read our guide on How to Prevent Loss & Theft for some recommendations on how to be proactive about your security.
-
-- Always backup your keys.
+[Be safe & secure & always back up your keys.](https://myetherwallet.groovehq.com/knowledge_base/topics/protecting-yourself-and-your-funds)
 
 MIT License Copyright © 2015-2017 MyEtherWallet LLC
