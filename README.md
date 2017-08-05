@@ -5,14 +5,13 @@
 
 ## Warnings
 - **This is a brand-spanking-new project and is currently in ALPHA. Use at your own risk. Do not expect it to work.**
-- Please do not place any keys with larges amounts into your new mewify keystore folder. We have been developing securely, but have not had an audit, nor explored all possible exploits.
-- This has not been tested on Windows yet. Feel free to give it a go, but it may not work.
-- Please only use this if you comfortable with command line and debugging (and informing us about what you debugged.)
+- Please do not place any keys with larges amounts into your new mewify keystore folder for the time being.
+- Windows builds are hard. Please join our Slack to get assistance. 
 
 ##If you have a problem
 - Please open a github issue.
-    - *tayvano is now spending ~2hrs / day on support requests that come in on every platform. While MEW users love it when she's up at 5am, her client's hate it when she falls asleep on a call.*
-- So, pretty please: open a github issue. 😃
+- Pretty please: open a github issue. 😃
+- Or join our Slack #mewify channel and debug w/ us.
 - If possible, we would LOVE you if you could include the following in your issue:
     - your OS
     - OS version
@@ -24,7 +23,7 @@
         - I opened the app up and it died 😞.
         - I tried to send a transaction and it died.
         - I successfully sent a transaction but now my computer turned into a dragon and attacked me. Here is the TX ID as a link to etherscan.io because even though I'm being attacked by a rabid computer-dragon, I still understand how much easier it makes your life when I give you links.
-- We will be better at providing full support users we squash all these pesky bugs. Until then, file everything as a **GITHUB ISSUE, PLEEEEEASE!**
+
 
 
 ## Getting up and running
@@ -65,14 +64,41 @@
 - Enter **correct** password in Mewify
 - Confirm transaction
 
+---
 
-## Contact Us
-- Created & Maintained by [kvhnuke](https://github.com/kvhnuke) and [tayvano](https://github.com/tayvano)
-- [MyEtherWallet on Github](https://github.com/MyEtherWallet)
-- [MyEtherWallet.com on Github](https://github.com/kvhnuke/etherwallet)
-- [MyEtherAPI on Github](https://github.com/MyEtherWallet/myetherapi)
-- [Mewify on Github](https://github.com/MyEtherWallet/Mewify)
+### Contact
+
+##### On the Web
+- [MyEtherWallet.com](https://www.MyEtherWallet.com)
+- [Sign Message](https://www.myetherwallet.com/signmsg.html)
+
+##### Github
+- [MyEtherWallet v3](https://github.com/kvhnuke/etherwallet)
+- [MyEtherWallet Organization](https://github.com/MyEtherWallet)
+
+##### Chrome Extension
+- [MyEtherWallet CX](https://chrome.google.com/webstore/detail/myetherwallet-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en)
+- [EAL CX (anti-phishing)](https://chrome.google.com/webstore/detail/etheraddresslookup/pdknmigbbbhmllnmgdfalmedcmcefdfn)
+
+##### Help
+- [Knowledge Base](https://myetherwallet.groovehq.com/help_center)
+- [Email Suppport](mailto:support@myetherwallet.com)
+- [Helpful Utils &amp; ENS Debugging](https://www.myetherwallet.com/helpers.html)
+
+##### Social
+- [Facebook](https://www.facebook.com/MyEtherWallet/)
+- [Linkedin](https://www.linkedin.com/company/myetherwallet)
+- [Medium](https://medium.com/@myetherwallet_96408)
+- [Reddit](https://www.reddit.com/r/MyEtherWallet/)
+- [Slack](https://myetherwallet.herokuapp.com/)
+- [Twitter](https://twitter.com/myetherwallet)
 
 ---
 
-**Mewify is licensed under The MIT License (MIT).**
+**Disclaimer**
+
+- [Be safe & secure](https://myetherwallet.groovehq.com/knowledge_base/topics/protecting-yourself-and-your-funds) We highly recommend that you read our guide on How to Prevent Loss & Theft for some recommendations on how to be proactive about your security.
+
+- Always backup your keys.
+
+MIT License Copyright © 2015-2017 MyEtherWallet LLC
