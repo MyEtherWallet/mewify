@@ -68,30 +68,15 @@
 
 ### Contact
 
-##### On the Web
-- [MyEtherWallet.com](https://www.MyEtherWallet.com)
-- [Sign Message](https://www.myetherwallet.com/signmsg.html)
+##### On the Web • [MyEtherWallet.com](https://www.MyEtherWallet.com) • [Sign Message](https://www.myetherwallet.com/signmsg.html)
 
-##### Github
-- [MyEtherWallet v3](https://github.com/kvhnuke/etherwallet)
-- [MyEtherWallet Organization](https://github.com/MyEtherWallet)
+##### Github • [MyEtherWallet v3](https://github.com/kvhnuke/etherwallet) • [MyEtherWallet Organization](https://github.com/MyEtherWallet)
 
-##### Chrome Extension
-- [MyEtherWallet CX](https://chrome.google.com/webstore/detail/myetherwallet-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en)
-- [EAL CX (anti-phishing)](https://chrome.google.com/webstore/detail/etheraddresslookup/pdknmigbbbhmllnmgdfalmedcmcefdfn)
+##### Chrome Extension • [MyEtherWallet CX](https://chrome.google.com/webstore/detail/myetherwallet-cx/nlbmnnijcnlegkjjpcfjclmcfggfefdm?hl=en) • [EAL CX (anti-phishing)](https://chrome.google.com/webstore/detail/etheraddresslookup/pdknmigbbbhmllnmgdfalmedcmcefdfn)
 
-##### Help
-- [Knowledge Base](https://myetherwallet.groovehq.com/help_center)
-- [Email Suppport](mailto:support@myetherwallet.com)
-- [Helpful Utils &amp; ENS Debugging](https://www.myetherwallet.com/helpers.html)
+##### Help • [Knowledge Base](https://myetherwallet.groovehq.com/help_center) • [Email Suppport](mailto:support@myetherwallet.com) • [Helpful Utils &amp; ENS Debugging](https://www.myetherwallet.com/helpers.html)
 
-##### Social
-- [Facebook](https://www.facebook.com/MyEtherWallet/)
-- [Linkedin](https://www.linkedin.com/company/myetherwallet)
-- [Medium](https://medium.com/@myetherwallet_96408)
-- [Reddit](https://www.reddit.com/r/MyEtherWallet/)
-- [Slack](https://myetherwallet.herokuapp.com/)
-- [Twitter](https://twitter.com/myetherwallet)
+##### Social: [Facebook](https://www.facebook.com/MyEtherWallet/) • [Linkedin](https://www.linkedin.com/company/myetherwallet) • [Medium](https://medium.com/@myetherwallet_96408) • [Reddit](https://www.reddit.com/r/MyEtherWallet/) • [Slack](https://myetherwallet.herokuapp.com/) • [Twitter](https://twitter.com/myetherwallet)
 
 ---
 
