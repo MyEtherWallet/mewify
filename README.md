@@ -8,7 +8,7 @@
 - Please do not place any keys with larges amounts into your new mewify keystore folder for the time being.
 - Windows builds are hard. Please join our Slack to get assistance. 
 
-##If you have a problem
+## If you have a problem
 - Please open a github issue.
 - Pretty please: open a github issue. 😃
 - Or join our Slack #mewify channel and debug w/ us.
