@@ -35,5 +35,13 @@
         "blockExplorerTX": "https://gastracker.io/tx/[[txHash]]",
         "blockExplorerAddr": "https://gastracker.io/addr/[[address]]"
     }],
-    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}"
+    "node": "{\"name\":\"ETH\",\"url\":\"https://api.myetherapi.com/eth\",\"chainId\":1,\"blockExplorerTX\":\"https://etherscan.io/tx/[[txHash]]\",\"blockExplorerAddr\":\"https://etherscan.io/address/[[address]]\"}",
+    "rpcRateLimit": {
+        "reporter": false,
+        "reporterInterval": 5000,
+        "serverInterval": 1000,
+        "priorityMethods": [
+            "eth_newBlockFilter"
+        ]
+    }
 }

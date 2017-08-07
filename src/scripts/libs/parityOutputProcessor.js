@@ -5,7 +5,7 @@ var parityOutputProcessor = function() {
     };
     this.queue = {};
 }
-parityOutputProcessor.prototype.preProcess = function(req) {;
+parityOutputProcessor.prototype.preProcess = function(req) {
     var _this = this;
     if (Array.isArray(req)) {
         req.forEach(function(obj) {
